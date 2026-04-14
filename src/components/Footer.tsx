@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useSiteSettings } from "../lib/SiteSettingsContext";
 
 const NAV_FONT: React.CSSProperties = {
   fontFamily: "'Google Sans', 'Roboto', Arial, sans-serif",
@@ -78,7 +79,20 @@ const socialLinks = [
   },
 ];
 
+// Format phone to tel: href (strip spaces/+)
+function toTelHref(phone: string) {
+  return "tel:" + phone.replace(/[\s+()-]/g, "");
+}
+
+// Format WhatsApp number to wa.me link
+function toWhatsAppHref(number: string) {
+  const clean = number.replace(/[\s+()-]/g, "");
+  return `https://wa.me/${clean}`;
+}
+
 export default function Footer() {
+  const { general } = useSiteSettings();
+
   return (
     <footer id="contact-us" className="w-full bg-white border-t border-[#e8eaed]">
       <div className="max-w-7xl mx-auto px-6 py-20">
@@ -86,8 +100,8 @@ export default function Footer() {
         <div className="mb-16">
           <Link to="/">
             <img
-              src="https://res.cloudinary.com/dn2sab6qc/image/upload/v1773930131/repair-my-phone-screen-logo_jmngqv.webp"
-              alt="Repair My Phone Screen"
+              src={general.logoUrl}
+              alt={general.businessName}
               className="h-20 w-auto object-contain"
             />
           </Link>
@@ -96,10 +110,7 @@ export default function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-14">
           {columns.map((col) => (
             <div key={col.heading}>
-              <p
-                className="text-[13px] font-semibold text-[#202124] mb-4"
-                style={NAV_FONT}
-              >
+              <p className="text-[13px] font-semibold text-[#202124] mb-4" style={NAV_FONT}>
                 {col.heading}
               </p>
               <ul className="space-y-3">
@@ -119,29 +130,38 @@ export default function Footer() {
           ))}
 
           <div>
-            <p
-              className="text-[13px] font-semibold text-[#202124] mb-4"
-              style={NAV_FONT}
-            >
+            <p className="text-[13px] font-semibold text-[#202124] mb-4" style={NAV_FONT}>
               Contact Us
             </p>
             <ul className="space-y-3">
-              <li>
-                <p className="text-[13px] text-[#5f6368] leading-relaxed" style={NAV_FONT}>
-                  Fonebox, 117 Friargate,<br />
-                  Preston, PR1 2EE
-                </p>
-              </li>
-              <li>
-                <a href="tel:03332244018" className="text-[13px] text-[#5f6368] hover:text-red-600 transition-colors" style={NAV_FONT}>
-                  0333 224 4018
-                </a>
-              </li>
-              <li>
-                <a href="mailto:info@repairmyphonescreen.co.uk" className="text-[13px] text-[#5f6368] hover:text-red-600 transition-colors" style={NAV_FONT}>
-                  info@repairmyphonescreen.co.uk
-                </a>
-              </li>
+              {general.address && (
+                <li>
+                  <p className="text-[13px] text-[#5f6368] leading-relaxed" style={NAV_FONT}>
+                    {general.address}
+                  </p>
+                </li>
+              )}
+              {general.phone && (
+                <li>
+                  <a href={toTelHref(general.phone)} className="text-[13px] text-[#5f6368] hover:text-red-600 transition-colors" style={NAV_FONT}>
+                    {general.phone}
+                  </a>
+                </li>
+              )}
+              {general.whatsappNumber && (
+                <li>
+                  <a href={toWhatsAppHref(general.whatsappNumber)} target="_blank" rel="noopener noreferrer" className="text-[13px] text-[#5f6368] hover:text-green-600 transition-colors" style={NAV_FONT}>
+                    WhatsApp Us
+                  </a>
+                </li>
+              )}
+              {general.email && (
+                <li>
+                  <a href={`mailto:${general.email}`} className="text-[13px] text-[#5f6368] hover:text-red-600 transition-colors" style={NAV_FONT}>
+                    {general.email}
+                  </a>
+                </li>
+              )}
             </ul>
           </div>
         </div>
@@ -149,7 +169,7 @@ export default function Footer() {
         <div className="border-t border-[#e8eaed] pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
             <span className="text-[12px] text-[#5f6368]" style={NAV_FONT}>
-              © {new Date().getFullYear()} Repair My Phone Screen. All rights reserved.
+              © {new Date().getFullYear()} {general.businessName}. All rights reserved.
             </span>
             <span className="text-[12px] text-[#5f6368]" style={NAV_FONT}>
               A subsidiary of Fonebox Ltd
@@ -168,7 +188,6 @@ export default function Footer() {
               </a>
             ))}
           </div>
-
         </div>
       </div>
     </footer>

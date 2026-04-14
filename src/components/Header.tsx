@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { ShoppingCart, Search, X, Menu, Smartphone, Tablet, Watch } from "lucide-react";
 import { useRepairCart } from "../lib/repairCart";
 import { searchCatalog, type SearchResultItem } from "../lib/api";
+import { useSiteSettings } from "../lib/SiteSettingsContext";
 
 function slugifySegment(value: string) {
   return value.toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
@@ -33,6 +34,7 @@ export default function Header() {
   const [searchLoading, setSearchLoading] = useState(false);
   const { itemCount } = useRepairCart();
   const navigate = useNavigate();
+  const { general } = useSiteSettings();
   const searchRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
@@ -92,8 +94,8 @@ export default function Header() {
           <div className="flex items-center flex-1 min-w-0">
             <Link to="/" className="flex-shrink-0 mr-6">
               <img
-                src="https://res.cloudinary.com/dn2sab6qc/image/upload/v1773930131/repair-my-phone-screen-logo_jmngqv.webp"
-                alt="Repair My Phone Screen"
+                src={general.logoUrl}
+                alt={general.businessName}
                 className="h-20 w-auto object-contain"
               />
             </Link>

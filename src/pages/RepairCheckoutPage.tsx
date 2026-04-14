@@ -11,6 +11,7 @@ import {
 } from "../lib/repairCart";
 import { createCheckout, type CheckoutPayload } from "../lib/api";
 import { useState, type FormEvent } from "react";
+import { useSiteSettings } from "../lib/SiteSettingsContext";
 
 type CheckoutErrors = Partial<Record<keyof RepairCheckoutDetails, string>>;
 
@@ -35,7 +36,15 @@ const PackageIcon = ({ active }: { active: boolean }) => (
   </svg>
 );
 
-const POSTAGE_OPTIONS: { value: PostageType; title: string; description: string }[] = [
+const CollectionIcon = ({ active }: { active: boolean }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round"
+    className={`h-7 w-7 transition-colors duration-200 ${active ? "stroke-red-600" : "stroke-[#6b7280]"}`}>
+    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+    <polyline points="9 22 9 12 15 12 15 22" />
+  </svg>
+);
+
+const ALL_POSTAGE_OPTIONS: { value: PostageType; title: string; description: string; flag?: "sameDayRepairs" | "collectionDelivery" }[] = [
   {
     value: "print-label",
     title: "Print Our Label",
@@ -45,6 +54,12 @@ const POSTAGE_OPTIONS: { value: PostageType; title: string; description: string 
     value: "send-pack",
     title: "Send a Pack From Us",
     description: "We'll post you a free prepaid packaging kit",
+  },
+  {
+    value: "collection",
+    title: "Collection & Delivery",
+    description: "We'll collect your device and deliver it back once repaired",
+    flag: "collectionDelivery",
   },
 ];
 
@@ -69,6 +84,14 @@ const networkOptions = ["EE", "O2", "Vodafone", "Three", "Tesco Mobile", "giffga
 export default function RepairCheckoutPage() {
   const navigate = useNavigate();
   const { itemCount, items, subtotal } = useRepairCart();
+  const { operations: { sameDayRepairs, collectionDelivery } } = useSiteSettings();
+
+  // Build the available postage options based on admin settings
+  const postageOptions = ALL_POSTAGE_OPTIONS.filter(opt => {
+    if (opt.flag === "collectionDelivery") return collectionDelivery;
+    if (opt.flag === "sameDayRepairs")     return sameDayRepairs;
+    return true;
+  });
   const existingSession = readRepairCheckoutSession();
   const [formData, setFormData] = useState<RepairCheckoutDetails>(defaultCheckoutDetails);
   const [errors, setErrors] = useState<CheckoutErrors>({});
@@ -377,7 +400,7 @@ export default function RepairCheckoutPage() {
                 <h3 className="text-[16px] font-semibold text-[#202124]">How would you like to send your device?</h3>
                 <p className="mt-1 text-[13px] text-[#5f6368]">Choose your preferred postage option — both are completely free.</p>
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                  {POSTAGE_OPTIONS.map((option) => {
+                  {postageOptions.map((option) => {
                     const isSelected = formData.postageType === option.value;
                     return (
                       <button
@@ -394,7 +417,9 @@ export default function RepairCheckoutPage() {
                       >
                         <div className="flex items-center justify-between">
                           <div className={`flex h-11 w-11 items-center justify-center rounded-[14px] transition-colors duration-200 ${isSelected ? "bg-red-100" : "bg-[#f3f4f6]"}`}>
-                            {option.value === "print-label" ? <PrinterIcon active={isSelected} /> : <PackageIcon active={isSelected} />}
+                            {option.value === "print-label" && <PrinterIcon active={isSelected} />}
+                            {option.value === "send-pack"   && <PackageIcon active={isSelected} />}
+                            {option.value === "collection"  && <CollectionIcon active={isSelected} />}
                           </div>
                           <div
                             className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border-2 transition-all duration-200 ${

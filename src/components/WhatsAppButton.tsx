@@ -1,8 +1,13 @@
-const WHATSAPP_NUMBER = "447700000000"; // Replace with actual WhatsApp number (no + or spaces)
+import { useSiteSettings } from "../lib/SiteSettingsContext";
+
 const WHATSAPP_MESSAGE = "Hi! I need help with my phone repair.";
 
 export default function WhatsAppButton() {
-  const href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`;
+  const { general } = useSiteSettings();
+
+  // Clean the number — remove spaces, +, dashes, parens
+  const number = general.whatsappNumber.replace(/[\s+()-]/g, "") || "447761665499";
+  const href = `https://wa.me/${number}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`;
 
   return (
     <a
