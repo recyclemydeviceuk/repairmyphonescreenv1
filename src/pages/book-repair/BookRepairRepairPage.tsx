@@ -1,0 +1,436 @@
+import { useEffect, useState } from "react";
+import {
+  BatteryCharging,
+  Camera,
+  CheckCircle2,
+  Loader2,
+  Monitor,
+  Smartphone,
+  Tablet,
+  Watch,
+  Wrench,
+} from "lucide-react";
+import { Navigate, useNavigate, useParams } from "react-router-dom";
+import Footer from "../../components/Footer";
+import Header from "../../components/Header";
+import BookRepairLayout from "../../components/book-repair/BookRepairLayout";
+import { addRepairCartItem } from "../../lib/repairCart";
+import {
+  getPricingByModel,
+  getPublicBrandModels,
+  type PricingRuleResult,
+  type BrandResult,
+  type ModelResult,
+} from "../../lib/api";
+
+// ── Types ────────────────────────────────────────────────────────────────────
+
+type RepairCard = {
+  _id:          string;
+  title:        string;
+  price:        string;
+  unitPrice:    number;
+  originalPrice?: number;
+  description:  string;
+  warranty:     string;
+  turnaround:   string;
+  icon:         CategoryIcon;
+  imageUrl?:    string;
+};
+
+type CategoryIcon = "device" | "screen" | "battery" | "camera" | "wrench" | "watch";
+
+type RepairCategory = {
+  key:   string;
+  label: string;
+  icon:  CategoryIcon;
+  items: RepairCard[];
+};
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+const CATEGORY_UI: Record<string, { key: string; label: string; icon: CategoryIcon }> = {
+  screen:        { key: "screen",  label: "Screen",             icon: "screen"  },
+  back_glass:    { key: "back",    label: "Back cover",         icon: "device"  },
+  battery:       { key: "battery", label: "Battery & charging", icon: "battery" },
+  charging_port: { key: "battery", label: "Battery & charging", icon: "battery" },
+  camera:        { key: "camera",  label: "Camera",             icon: "camera"  },
+  speaker:       { key: "other",   label: "Other repairs",      icon: "wrench"  },
+  other:         { key: "other",   label: "Other repairs",      icon: "wrench"  },
+};
+
+const CATEGORY_ORDER = ["screen", "back", "battery", "camera", "other"];
+
+function getTabIcon(icon: CategoryIcon, tab: string) {
+  if (icon === "screen")   return Monitor;
+  if (icon === "battery")  return BatteryCharging;
+  if (icon === "camera")   return Camera;
+  if (icon === "wrench")   return Wrench;
+  if (icon === "watch")    return Watch;
+  if (tab === "tablet")    return Tablet;
+  if (tab === "watch")     return Watch;
+  return Smartphone;
+}
+
+/** Strip model name from repair title to avoid repetition e.g. "iPhone 11 Screen Replacement" → "Screen Replacement" */
+function cleanTitle(repairName: string, modelName: string) {
+  return repairName.replace(modelName, "").replace(/\s{2,}/g, " ").trim() || repairName;
+}
+
+// ── Build category list from backend pricing rules ───────────────────────────
+
+function buildCategories(rules: PricingRuleResult[], modelName: string): RepairCategory[] {
+  const map = new Map<string, RepairCategory>();
+
+  for (const rule of rules) {
+    const ui = CATEGORY_UI[rule.category] ?? CATEGORY_UI.other;
+    if (!map.has(ui.key)) {
+      map.set(ui.key, { key: ui.key, label: ui.label, icon: ui.icon, items: [] });
+    }
+    const cat = map.get(ui.key)!;
+
+    const iconForItem: CategoryIcon =
+      rule.category === "screen"   ? "screen"  :
+      rule.category === "battery" || rule.category === "charging_port" ? "battery" :
+      rule.category === "camera"   ? "camera"  : "wrench";
+
+    cat.items.push({
+      _id:         rule._id,
+      title:       rule.repairTypeName,
+      price:       `£${rule.price}`,
+      unitPrice:   rule.price,
+      originalPrice: rule.originalPrice,
+      // Use backend values — these are stored per model+repair in the DB
+      description: rule.description ?? `Professional ${rule.repairTypeName.toLowerCase()} service for your ${modelName}.`,
+      warranty:    rule.warranty    ?? "3 months",
+      turnaround:  rule.turnaround  ?? "Up to 60 minutes",
+      icon:        iconForItem,
+      imageUrl:    rule.repairTypeImageUrl || undefined,
+    });
+  }
+
+  return CATEGORY_ORDER.filter(k => map.has(k)).map(k => map.get(k)!);
+}
+
+const VALID_TABS = ["phone", "tablet", "watch"];
+
+// ── Component ────────────────────────────────────────────────────────────────
+
+export default function BookRepairRepairPage() {
+  const { tab, brandSlug, sectionSlug, modelSlug } = useParams();
+  const navigate = useNavigate();
+
+  const [selectedCategoryKey, setSelectedCategoryKey] = useState("screen");
+  const [categories, setCategories] = useState<RepairCategory[]>([]);
+  const [loading, setLoading]   = useState(true);
+  const [brand, setBrand]       = useState<BrandResult | null>(null);
+  const [model, setModel]       = useState<ModelResult | null>(null);
+  const [toast, setToast]       = useState<{ title: string; variant: "added" | "exists" } | null>(null);
+
+  // ── Fetch brand info + pricing from backend ───────────────────────────────
+  useEffect(() => {
+    if (!brandSlug || !modelSlug || !tab || !VALID_TABS.includes(tab)) return;
+    let cancelled = false;
+    setLoading(true);
+    setCategories([]);
+    setModel(null);
+    setBrand(null);
+
+    (async () => {
+      try {
+        // 1. Resolve brand + find the model object by slug
+        const { brand: brandData, models } = await getPublicBrandModels(brandSlug, sectionSlug);
+        if (cancelled) return;
+        setBrand(brandData);
+
+        const found = models.find(
+          m => m.slug === modelSlug ||
+               m.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") === modelSlug,
+        );
+        if (!found) { setLoading(false); return; }
+        setModel(found);
+
+        // 2. Fetch all pricing rules for this model (description/warranty/turnaround included)
+        const rules = await getPricingByModel(modelSlug);
+        if (cancelled) return;
+
+        if (rules.length > 0) {
+          const built = buildCategories(rules, found.name);
+          setCategories(built);
+          // Default to first available category
+          if (built.length > 0) setSelectedCategoryKey(built[0].key);
+        }
+      } catch {
+        if (!cancelled) setCategories([]);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [brandSlug, modelSlug, sectionSlug, tab]);
+
+  // ── Toast auto-dismiss ────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!toast) return;
+    const id = window.setTimeout(() => setToast(null), 5000);
+    return () => window.clearTimeout(id);
+  }, [toast]);
+
+  // ── Guards ────────────────────────────────────────────────────────────────
+  if (!tab || !VALID_TABS.includes(tab) || !brandSlug || !modelSlug) {
+    return <Navigate to="/book-repair" replace />;
+  }
+  if (!loading && !brand) {
+    return <Navigate to={`/book-repair/${tab}`} replace />;
+  }
+  if (!loading && !model) {
+    return <Navigate to={sectionSlug ? `/book-repair/${tab}/${brandSlug}/${sectionSlug}/models` : `/book-repair/${tab}/${brandSlug}/models`} replace />;
+  }
+
+  const modelName  = model?.name ?? "";
+  const brandName  = brand?.name ?? "";
+  const brandImage = brand?.showcaseImageUrl ?? "";
+  const backTo     = sectionSlug
+    ? `/book-repair/${tab}/${brandSlug}/${sectionSlug}/models`
+    : `/book-repair/${tab}/${brandSlug}/models`;
+
+  const selectedCategory = categories.find(c => c.key === selectedCategoryKey) ?? categories[0];
+
+  return (
+    <>
+      {/* ── Cart modal overlay ─────────────────────────────────────────── */}
+      {toast && (
+        <>
+          {/* Backdrop — blurred + darkened */}
+          <div
+            className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm"
+            onClick={() => setToast(null)}
+          />
+
+          {/* Modal card — centred */}
+          <div className="fixed inset-0 z-[70] flex items-center justify-center px-4">
+            <div className="w-full max-w-sm overflow-hidden rounded-[32px] bg-white shadow-[0_32px_80px_rgba(0,0,0,0.28)]">
+
+              {/* Top accent bar */}
+              <div className="h-1.5 w-full bg-gradient-to-r from-red-600 via-red-400 to-red-300" />
+
+              <div className="px-7 pb-7 pt-6">
+
+                {/* Header */}
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl bg-red-50">
+                      <CheckCircle2 size={22} className="text-red-600" />
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-red-600">
+                        {toast.variant === "added" ? "Added to cart" : "Already in cart"}
+                      </p>
+                      <p className="mt-0.5 text-[16px] font-bold leading-snug text-[#111827]">
+                        {toast.title}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Close ✕ */}
+                  <button
+                    type="button"
+                    onClick={() => setToast(null)}
+                    aria-label="Close"
+                    className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-[#9ca3af] transition-colors hover:bg-[#f3f4f6] hover:text-[#374151]"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+                      <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
+                    </svg>
+                  </button>
+                </div>
+
+                {/* Divider */}
+                <div className="my-5 border-t border-[#f3f4f6]" />
+
+                {/* Action buttons */}
+                <div className="flex flex-col gap-3">
+                  <button
+                    type="button"
+                    onClick={() => navigate("/repair-cart")}
+                    className="flex w-full items-center justify-center gap-2 rounded-full bg-red-600 py-3.5 text-[14px] font-semibold text-white transition-colors hover:bg-red-700"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+                      <path d="M1 1.75A.75.75 0 0 1 1.75 1h1.628a1.75 1.75 0 0 1 1.734 1.51L5.18 3a65.25 65.25 0 0 1 13.36 1.412.75.75 0 0 1 .58.875 48.645 48.645 0 0 1-1.618 6.2.75.75 0 0 1-.712.513H6a2.503 2.503 0 0 0-2.292 1.5H17.25a.75.75 0 0 1 0 1.5H2.76a.75.75 0 0 1-.748-.807 4.002 4.002 0 0 1 2.716-3.486L3.626 2.716a.25.25 0 0 0-.248-.216H1.75A.75.75 0 0 1 1 1.75ZM6 17.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0ZM15.5 19a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z" />
+                    </svg>
+                    Go to Cart
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setToast(null)}
+                    className="flex w-full items-center justify-center rounded-full border border-[#e5e7eb] bg-white py-3.5 text-[14px] font-semibold text-[#374151] transition-colors hover:border-[#d1d5db] hover:bg-[#f9fafb]"
+                  >
+                    Continue browsing
+                  </button>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      <Header />
+      <BookRepairLayout backTo={backTo} showTitleSection={false} title={`${modelName} Repairs`}>
+        <div className="mx-auto max-w-5xl">
+
+          {/* ── Model heading ──────────────────────────────────────────── */}
+          <div className="mb-10 text-center">
+            <p className="mx-auto max-w-2xl text-[20px] font-semibold leading-8 text-[#202124]">
+              {modelName}
+            </p>
+          </div>
+
+          {/* ── Loading ────────────────────────────────────────────────── */}
+          {loading && (
+            <div className="flex flex-col items-center justify-center py-20 gap-3">
+              <Loader2 size={28} className="animate-spin text-red-500" />
+              <p className="text-[14px] text-[#5f6368]">Loading repair options…</p>
+            </div>
+          )}
+
+          {/* ── Empty ──────────────────────────────────────────────────── */}
+          {!loading && categories.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-20 gap-3">
+              <Wrench size={28} className="text-[#d1d5db]" />
+              <p className="text-[14px] text-[#5f6368]">No repair options available for this model yet.</p>
+            </div>
+          )}
+
+          {/* ── Category tabs + repair cards ───────────────────────────── */}
+          {!loading && categories.length > 0 && (
+            <>
+              {/* Category pills */}
+              <div className="mb-8 flex flex-wrap items-center justify-center gap-3">
+                {categories.map(cat => {
+                  const Icon     = getTabIcon(cat.icon, tab);
+                  const isActive = cat.key === selectedCategory?.key;
+                  return (
+                    <button
+                      key={cat.key}
+                      type="button"
+                      onClick={() => setSelectedCategoryKey(cat.key)}
+                      className={`group relative flex min-h-[68px] min-w-[180px] items-center gap-3 rounded-[20px] border px-4 py-4 text-left transition-all duration-200 ${
+                        isActive
+                          ? "border-red-500 bg-red-50/80 text-red-600 shadow-[0_10px_30px_rgba(220,38,38,0.12)]"
+                          : "border-[#d2e3fc] bg-white text-[#202124] hover:border-red-300 hover:bg-[#fff8f8]"
+                      }`}
+                    >
+                      <div className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl transition-all duration-200 ${
+                        isActive ? "bg-white text-red-600 shadow-sm" : "bg-[#f5f7fb] text-[#344054] group-hover:bg-white"
+                      }`}>
+                        <Icon size={20} className={isActive ? "text-red-600" : "text-[#344054]"} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <span className={`block text-[14px] font-semibold leading-5 ${isActive ? "text-red-600" : "text-[#202124]"}`}>
+                          {cat.label}
+                        </span>
+                      </div>
+                      <span className={`absolute bottom-0 left-4 right-4 h-[3px] rounded-full transition-all duration-200 ${
+                        isActive ? "bg-red-500 opacity-100" : "bg-transparent opacity-0 group-hover:bg-red-200 group-hover:opacity-100"
+                      }`} />
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Repair cards */}
+              {selectedCategory && (
+                <div className="overflow-hidden rounded-[30px] border border-red-500 bg-white">
+                  {selectedCategory.items.map((item, index) => {
+                    const displayTitle = cleanTitle(item.title, modelName);
+                    return (
+                      <div key={item._id} className={index > 0 ? "border-t border-[#f1f3f4]" : ""}>
+                        <div className="grid md:grid-cols-[1.1fr_1.3fr]">
+
+                          {/* Left: image + price + CTA */}
+                          <div className="flex flex-col items-center justify-center px-8 py-10 text-center md:border-r md:border-[#f1f3f4]">
+                            <img
+                              src={item.imageUrl || brandImage}
+                              alt={displayTitle}
+                              className="h-[88px] w-[88px] object-contain"
+                            />
+                            <h2 className="mt-5 max-w-[280px] text-[22px] font-semibold leading-8 text-red-600">
+                              {displayTitle}
+                            </h2>
+                            <div className="mt-3 flex items-baseline gap-2">
+                              <span className="text-[30px] font-bold leading-none text-[#111827]">
+                                {item.price}
+                              </span>
+                              {item.originalPrice && item.originalPrice > item.unitPrice && (
+                                <span className="text-[18px] font-medium text-[#9aa0a6] line-through">
+                                  £{item.originalPrice}
+                                </span>
+                              )}
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const result = addRepairCartItem({
+                                  id:          [tab, brandSlug, sectionSlug ?? "base", modelSlug, displayTitle.toLowerCase().replace(/\s+/g, "-"), "mail-in"].join(":"),
+                                  brandName,
+                                  brandSlug:   brandSlug!,
+                                  deviceImage: model?.imageUrl || brandImage,
+                                  model:       modelName,
+                                  modelSlug:   modelSlug!,
+                                  priceLabel:  item.price,
+                                  repairName:  displayTitle,
+                                  sectionSlug,
+                                  serviceType: "mail-in",
+                                  tab:         tab as "phone" | "tablet" | "watch",
+                                  turnaround:  item.turnaround,
+                                  unitPrice:   item.unitPrice,
+                                  warranty:    item.warranty,
+                                });
+                                setToast(result.status === "added"
+                                  ? { title: displayTitle, variant: "added" }
+                                  : { title: displayTitle, variant: "exists" });
+                              }}
+                              className="mt-6 inline-flex items-center justify-center rounded-full bg-red-600 px-7 py-3 text-[14px] font-semibold text-white transition-colors duration-200 hover:bg-red-700"
+                            >
+                              Book a repair
+                            </button>
+                          </div>
+
+                          {/* Right: description / warranty / turnaround — ALL from backend */}
+                          <div className="px-8 py-10">
+                            <div className="space-y-6">
+                              <div>
+                                <p className="text-[14px] font-semibold text-[#202124]">Repair description</p>
+                                <p className="mt-2 text-[14px] leading-6 text-[#5f6368]">{item.description}</p>
+                              </div>
+                              <div className="border-t border-[#eef2f7] pt-5">
+                                <p className="text-[14px] font-semibold text-[#202124]">Warranty</p>
+                                <p className="mt-2 text-[14px] font-medium text-red-600">{item.warranty}</p>
+                              </div>
+                              <div className="border-t border-[#eef2f7] pt-5">
+                                <p className="text-[14px] font-semibold text-[#202124]">Repair time</p>
+                                <p className="mt-2 text-[14px] font-medium text-red-600">{item.turnaround}</p>
+                                <p className="mt-2 text-[13px] leading-6 text-[#5f6368]">
+                                  If you book ahead, we can have the required part ready before you arrive.
+                                  Timing can vary slightly by model and device condition.
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </BookRepairLayout>
+      <Footer />
+    </>
+  );
+}
