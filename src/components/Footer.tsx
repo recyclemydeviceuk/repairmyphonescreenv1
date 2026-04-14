@@ -15,16 +15,17 @@ const columns = [
       { label: "How It Works", to: "/how-it-works" },
       { label: "About Us", to: "/about-us" },
       { label: "Contact Us", to: "/contact-us" },
+      { label: "All Locations", to: "/locations" },
     ],
   },
   {
     heading: "Our Services",
     links: [
-      { label: "iPhone Repairs", to: "/book-repair/phone" },
-      { label: "Samsung Repairs", to: "/book-repair/phone" },
-      { label: "iPad Repairs", to: "/book-repair/tablet" },
-      { label: "Screen Replacement", to: "/book-repair/phone" },
-      { label: "Battery Replacement", to: "/book-repair/phone" },
+      { label: "iPhone Repairs", to: "/iphone-repairs" },
+      { label: "Samsung Repairs", to: "/samsung-repairs-north-west" },
+      { label: "iPad Repairs", to: "/ipad-repairs-north-west" },
+      { label: "Google Pixel Repairs", to: "/google-pixel-repairs-north-west" },
+      { label: "Huawei Repairs", to: "/huawei-repairs-north-west" },
     ],
   },
   {

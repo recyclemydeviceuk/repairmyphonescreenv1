@@ -33,6 +33,9 @@ import TermsAndConditionsPage from "./pages/TermsAndConditionsPage";
 import WarrantyPage from "./pages/WarrantyPage";
 import TrackRepairPage from "./pages/TrackRepairPage";
 import WhatsAppButton from "./components/WhatsAppButton";
+import LocationPage from "./pages/locations/LocationPage";
+import GenericLocationPage from "./pages/locations/GenericLocationPage";
+import AllLocationsPage from "./pages/AllLocationsPage";
 
 const API_BASE = import.meta.env.VITE_API_URL || "";
 const PAYPAL_CLIENT_ID = import.meta.env.VITE_PAYPAL_CLIENT_ID || "AewDJ-nxcF5KKaQdU4_CmJhE2JS_ZnyXYayO9Utj6mKSiwaKs-CBiimWJe36z6nB_vui89817TsvA3sC";
@@ -162,6 +165,12 @@ function App() {
             <Route path="/book-repair/:tab/:brandSlug/models/:modelSlug" element={<BookRepairRepairPage />} />
             <Route path="/book-repair/:tab/:brandSlug/:sectionSlug/models" element={<BookRepairModelPage />} />
             <Route path="/book-repair/:tab/:brandSlug/:sectionSlug/models/:modelSlug" element={<BookRepairRepairPage />} />
+
+            {/* Location SEO pages — matching old WordPress URLs */}
+            <Route path="/locations" element={<AllLocationsPage />} />
+            <Route path="/locations/:citySlug" element={<GenericLocationPage />} />
+            <Route path="/:regionSlug" element={<LocationPage />} />
+            <Route path="/:regionSlug/:citySlug" element={<LocationPage />} />
           </Routes>
         </BrowserRouter>
       </PayPalScriptProvider>
