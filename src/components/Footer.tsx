@@ -15,6 +15,7 @@ const columns = [
       { label: "How It Works", to: "/how-it-works" },
       { label: "About Us", to: "/about-us" },
       { label: "Contact Us", to: "/contact-us" },
+      { label: "Latest News", to: "/latest-news" },
       { label: "All Locations", to: "/locations" },
     ],
   },

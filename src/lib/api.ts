@@ -265,4 +265,31 @@ export async function validatePromoCode(code: string): Promise<PromoCodeResult> 
   return res.data.data;
 }
 
+// ── Blog ─────────────────────────────────────────────────────
+export interface BlogPostResult {
+  _id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  content: string;
+  category: string;
+  tags: string[];
+  imageUrl?: string;
+  author: string;
+  publishedAt: string;
+  views: number;
+}
+
+export async function getPublicBlogs(params?: Record<string, string>): Promise<{ data: BlogPostResult[]; meta: any }> {
+  const res = await api.get("/blog/public", { params });
+  return { data: res.data.data ?? [], meta: res.data.meta };
+}
+
+export async function getPublicBlogBySlug(slug: string): Promise<BlogPostResult | null> {
+  try {
+    const res = await api.get(`/blog/public/${slug}`);
+    return res.data.data;
+  } catch { return null; }
+}
+
 export default api;
