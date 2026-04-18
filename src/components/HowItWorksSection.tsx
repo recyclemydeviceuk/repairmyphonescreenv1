@@ -13,12 +13,12 @@ const steps = [
   {
     icon: <PackageOpen size={22} strokeWidth={2} className="text-red-600" />,
     title: "Post Your Device",
-    desc: "Pack securely and post to our repair centre — we start work the moment it arrives.",
+    desc: "Pack securely and post to our repair centre using special tracked delivery — we start work the moment it arrives.",
   },
   {
     icon: <Wrench size={22} strokeWidth={2} className="text-red-600" />,
-    title: "Repair and Return",
-    desc: "We will repair your device and send it to your address.",
+    title: "We Repair & Return",
+    desc: "Most repairs are completed the same day we receive your device. We return it via special tracked delivery — free of charge.",
   },
 ];
 

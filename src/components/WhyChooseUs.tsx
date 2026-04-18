@@ -6,14 +6,24 @@ const reasons = [
   {
     icon: (
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10" />
+        <polyline points="12 6 12 12 16 14" />
+      </svg>
+    ),
+    title: "SAME-DAY REPAIR",
+    desc: "Repaired the same day we receive your device — straight back to you.",
+  },
+  {
+    icon: (
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <rect x="1" y="3" width="15" height="13" rx="2" />
         <path d="M16 8h4l3 5v3h-7V8z" />
         <circle cx="5.5" cy="18.5" r="2.5" />
         <circle cx="18.5" cy="18.5" r="2.5" />
       </svg>
     ),
-    title: "FREE POSTAL REPAIRS",
-    desc: "Send your device to us free of charge — we cover the return delivery too.",
+    title: "UK-WIDE POSTAL SERVICE",
+    desc: "Send your device from anywhere in the UK — we cover the return delivery too.",
   },
   {
     icon: (
@@ -22,25 +32,24 @@ const reasons = [
         <polyline points="9 12 11 14 15 10" />
       </svg>
     ),
-    title: "6-MONTH WARRANTY",
-    desc: "Every repair is backed by a 6-month warranty on both parts and labour.",
+    title: "FULLY TRACKED & INSURED",
+    desc: "Special tracked delivery with full insurance — your device is safe with us.",
   },
   {
     icon: (
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="10" />
-        <polyline points="12 6 12 12 16 14" />
+        <path d="M20 6L9 17l-5-5" />
       </svg>
     ),
-    title: "SAME-DAY TURNAROUND",
-    desc: "We fix your device the same day it arrives and send it straight back.",
+    title: "12-MONTH WARRANTY",
+    desc: "Every repair is backed by a 12-month warranty on parts and labour.",
   },
   {
     icon: (
-      <span className="text-white text-[24px] font-bold leading-none" style={{ fontFamily: "Georgia, serif" }}>£</span>
+      <span className="text-white text-[22px] font-bold leading-none" style={{ fontFamily: "Georgia, serif" }}>£</span>
     ),
-    title: "PRICE PROMISE",
-    desc: "Transparent, competitive pricing — no hidden fees, no surprises.",
+    title: "NO FIX, NO FEE",
+    desc: "If we can't repair your device, you won't pay a penny — our promise to you.",
   },
 ];
 
@@ -57,8 +66,8 @@ export default function WhyChooseUs() {
           Why Choose Us?
         </h2>
 
-        {/* 4-column feature grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 md:gap-6">
+        {/* 5-column feature grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 md:gap-6">
           {reasons.map((r, i) => (
             <div
               key={i}

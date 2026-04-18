@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { CreditCard, PackageOpen, Wrench, Shield, Clock, Truck } from "lucide-react";
+import { CreditCard, PackageOpen, Wrench, Shield, Clock, Truck, Lock, Award, ThumbsUp } from "lucide-react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 
@@ -31,7 +31,7 @@ const steps = [
   {
     number: "02",
     title: "Post Your Device",
-    desc: "Pack your device securely and post it to our Preston repair centre using any tracked courier. We start work the moment it arrives — usually the same day.",
+    desc: "Pack your device securely and post it to our Preston repair centre using special tracked delivery. We start work the moment it arrives — usually the same day.",
     icon: <PackageOpen size={24} strokeWidth={1.8} className="text-red-600" />,
     bg: "bg-[#fff5f5]",
     illustration: (
@@ -49,7 +49,7 @@ const steps = [
   {
     number: "03",
     title: "We Repair & Return",
-    desc: "Our technicians carry out your repair using genuine parts. Once done, we test it thoroughly and send it straight back to you — free of charge.",
+    desc: "Our technicians carry out your repair using high-quality parts. Once done, we test it thoroughly and send it straight back to you via special tracked delivery — free of charge. Most repairs are completed the same day we receive your device.",
     icon: <Wrench size={24} strokeWidth={1.8} className="text-red-600" />,
     bg: "bg-[#fff0f0]",
     illustration: (
@@ -71,8 +71,8 @@ const steps = [
 const promises = [
   {
     icon: <Shield size={22} strokeWidth={1.8} className="text-red-600" />,
-    title: "6-month warranty",
-    desc: "Every repair is backed by a 6-month warranty on parts and labour.",
+    title: "12-month warranty",
+    desc: "Every repair is backed by a 12-month warranty on parts and labour.",
   },
   {
     icon: <Clock size={22} strokeWidth={1.8} className="text-red-600" />,
@@ -83,6 +83,29 @@ const promises = [
     icon: <Truck size={22} strokeWidth={1.8} className="text-red-600" />,
     title: "Free return delivery",
     desc: "We cover the full cost of returning your repaired device to you.",
+  },
+];
+
+const postalReassurance = [
+  {
+    icon: <Truck size={22} strokeWidth={1.8} className="text-red-600" />,
+    title: "Fully tracked & insured return delivery",
+    desc: "Every device is returned using special tracked, fully insured delivery — you can track it every step of the way.",
+  },
+  {
+    icon: <Award size={22} strokeWidth={1.8} className="text-red-600" />,
+    title: "Devices handled by experienced technicians",
+    desc: "Your device is only touched by qualified technicians with years of repair experience.",
+  },
+  {
+    icon: <Lock size={22} strokeWidth={1.8} className="text-red-600" />,
+    title: "Secure workshop environment",
+    desc: "Your device is kept safe in our secure Preston workshop with full CCTV monitoring at all times.",
+  },
+  {
+    icon: <ThumbsUp size={22} strokeWidth={1.8} className="text-red-600" />,
+    title: "Hundreds of successful repairs completed",
+    desc: "Thousands of satisfied customers across the UK trust us with their devices every month.",
   },
 ];
 
@@ -194,6 +217,50 @@ export default function HowItWorksPage() {
           </div>
         </section>
 
+        {/* ── Postal reassurance ──────────────────────────────── */}
+        <section className="mx-auto max-w-6xl px-6 pb-16">
+          <div className="rounded-[28px] border border-[#f3f4f6] bg-[#fafafa] px-8 py-9 md:px-12 md:py-10">
+            <p
+              className="text-[12px] font-semibold uppercase tracking-[0.16em] text-red-600"
+              style={NAV_FONT}
+            >
+              Your device is in safe hands
+            </p>
+            <h2
+              className="mt-3 text-[24px] md:text-[28px] font-bold text-[#202124]"
+              style={NAV_FONT}
+            >
+              Peace of mind with every postal repair
+            </h2>
+            <div className="mt-8 grid gap-5 md:grid-cols-2">
+              {postalReassurance.map((r) => (
+                <div
+                  key={r.title}
+                  className="flex items-start gap-4 rounded-[20px] border border-[#f3f4f6] bg-white px-6 py-5"
+                >
+                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-red-50">
+                    {r.icon}
+                  </div>
+                  <div>
+                    <h3
+                      className="text-[15px] font-bold text-[#202124]"
+                      style={NAV_FONT}
+                    >
+                      {r.title}
+                    </h3>
+                    <p
+                      className="mt-1 text-[13px] leading-6 text-[#5f6368]"
+                      style={NAV_FONT}
+                    >
+                      {r.desc}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* ── CTA ──────────────────────────────────────────────── */}
         <section className="mx-auto max-w-6xl px-6 pb-20">
           <div className="flex flex-col items-start justify-between gap-6 rounded-[32px] bg-red-600 px-8 py-10 md:flex-row md:items-center md:px-12 md:py-12">
@@ -205,7 +272,7 @@ export default function HowItWorksPage() {
                 Ready to get started?
               </h2>
               <p className="mt-2 text-[15px] text-white/80" style={NAV_FONT}>
-                Book your repair in minutes — no technical knowledge needed.
+                Most repairs are completed the same day we receive your device.
               </p>
             </div>
             <Link
@@ -213,7 +280,7 @@ export default function HowItWorksPage() {
               className="inline-flex flex-shrink-0 items-center justify-center rounded-full bg-white px-7 py-3.5 text-[14px] font-semibold text-red-600 transition-colors duration-200 hover:bg-red-50"
               style={NAV_FONT}
             >
-              Book a repair
+              Get Your Repair Quote
             </Link>
           </div>
         </section>

@@ -160,7 +160,7 @@ export default function AllLocationsPage() {
     }
     meta.setAttribute(
       "content",
-      `Browse all ${totals.total}+ phone, tablet & screen repair locations across the UK. Free postal service, lifetime warranty. iPhone, Samsung, iPad, Huawei, Google Pixel, Nokia & Sony Xperia repairs.`
+      `Browse all ${totals.total}+ phone, tablet & screen repair locations across the UK. Free postal service, 12-month warranty. iPhone, Samsung, iPad, Huawei, Google Pixel, Nokia & Sony Xperia repairs.`
     );
     let canonical = document.querySelector('link[rel="canonical"]');
     if (!canonical) {
@@ -212,7 +212,7 @@ export default function AllLocationsPage() {
               { label: "Brands Covered", value: BRANDS.length.toString() },
               { label: "Regions", value: totals.regionPages.toString() },
               { label: "Locations", value: totals.cityPages.toLocaleString() },
-              { label: "Lifetime Warranty", value: "✓" },
+              { label: "12-Month Warranty", value: "✓" },
             ].map((stat) => (
               <div
                 key={stat.label}
@@ -358,7 +358,7 @@ export default function AllLocationsPage() {
                 className="rounded-full bg-red-600 px-8 py-3.5 text-[14px] font-semibold text-white hover:bg-red-700 transition-colors"
                 style={NAV_FONT}
               >
-                Book a Repair Now
+                Get Your Repair Quote
               </Link>
               <Link
                 to="/how-it-works"

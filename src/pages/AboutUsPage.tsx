@@ -9,7 +9,7 @@ const NAV_FONT: React.CSSProperties = {
 const stats = [
   { value: "10,000+", label: "Devices repaired" },
   { value: "4.9★", label: "Average rating" },
-  { value: "Lifetime", label: "Warranty on screens" },
+  { value: "12 Months", label: "Warranty on all repairs" },
   { value: "Same day", label: "Turnaround" },
 ];
 
@@ -19,8 +19,8 @@ const values = [
     desc: "No hidden fees. You see the price before you book, and that's exactly what you pay.",
   },
   {
-    title: "Genuine parts",
-    desc: "We only use high-quality OEM parts so your device performs exactly as it should.",
+    title: "Quality parts",
+    desc: "We only use high-quality, rigorously tested parts so your device performs exactly as it should.",
   },
   {
     title: "Backed by warranty",
@@ -183,7 +183,7 @@ export default function AboutUsPage() {
               className="inline-flex flex-shrink-0 items-center justify-center rounded-full bg-white px-7 py-3.5 text-[14px] font-semibold text-red-600 transition-colors duration-200 hover:bg-red-50"
               style={NAV_FONT}
             >
-              Book a repair
+              Get Your Repair Quote
             </Link>
           </div>
         </section>

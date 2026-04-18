@@ -31,6 +31,7 @@ import HowItWorksPage from "./pages/HowItWorksPage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import TermsAndConditionsPage from "./pages/TermsAndConditionsPage";
 import WarrantyPage from "./pages/WarrantyPage";
+import WhyChooseUsPage from "./pages/WhyChooseUsPage";
 import TrackRepairPage from "./pages/TrackRepairPage";
 import WhatsAppButton from "./components/WhatsAppButton";
 import LocationPage from "./pages/locations/LocationPage";
@@ -159,6 +160,7 @@ function App() {
             <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
             <Route path="/terms" element={<TermsAndConditionsPage />} />
             <Route path="/warranty" element={<WarrantyPage />} />
+            <Route path="/why-choose-us" element={<WhyChooseUsPage />} />
             <Route path="/track-repair" element={<TrackRepairPage />} />
             <Route path="/book-repair" element={<BookRepairTypePage />} />
             <Route path="/book-repair/:tab" element={<BookRepairBrandPage />} />

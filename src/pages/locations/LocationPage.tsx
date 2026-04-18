@@ -57,7 +57,7 @@ function NotFoundFallback() {
               className="inline-flex items-center justify-center rounded-full border border-red-600 px-7 py-3.5 text-[14px] font-semibold text-red-600 transition-colors hover:bg-red-50"
               style={NAV_FONT}
             >
-              Book a repair
+              Get Your Repair Quote
             </Link>
           </div>
         </section>
@@ -80,8 +80,8 @@ function RegionalHubPage({
   const settings = useSiteSettings();
   const regionSlug = `${region.slug}`;
 
-  const seoTitle = `${brand.name} Repairs in ${region.name} | Free Postage & Lifetime Warranty | Repair My Phone Screen`;
-  const description = `Professional ${brand.name} screen repair service across ${region.name}. Free postage both ways, lifetime warranty on all repairs. Mail your device from any ${region.name} location.`;
+  const seoTitle = `${brand.name} Repairs in ${region.name} | Free Postage & 12-Month Warranty | Repair My Phone Screen`;
+  const description = `Professional ${brand.name} screen repair service across ${region.name}. Free postage both ways, 12-month warranty on all repairs. Mail your device from any ${region.name} location.`;
   const canonicalPath = `/${regionSlug}`;
 
   useEffect(() => {
@@ -137,8 +137,8 @@ function RegionalHubPage({
       ),
     },
     {
-      title: "Lifetime Warranty",
-      desc: `Every ${brand.name} screen repair we carry out is backed by a lifetime warranty on parts and workmanship. If anything goes wrong with the repair, we'll fix it free of charge.`,
+      title: "12-Month Warranty",
+      desc: `Every ${brand.name} screen repair we carry out is backed by a 12-month warranty on parts and workmanship. If anything goes wrong with the repair, we'll fix it free of charge.`,
       icon: (
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="text-red-600">
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
@@ -186,7 +186,7 @@ function RegionalHubPage({
     },
     {
       q: `Is there a warranty on ${brand.name} repairs?`,
-      a: `Yes. Every ${brand.name} repair we carry out is covered by a lifetime warranty on parts and workmanship. If the repair develops a fault, simply contact us and we'll fix it at no extra cost.`,
+      a: `Yes. Every ${brand.name} repair we carry out is covered by a 12-month warranty on parts and workmanship. If the repair develops a fault, simply contact us and we'll fix it at no extra cost.`,
     },
     {
       q: `Do I have to pay for postage?`,
@@ -243,7 +243,7 @@ function RegionalHubPage({
               {region.name}. Whether you have a cracked screen, an unresponsive
               display, or any other {brand.name} issue, our expert technicians
               will have your device looking and working like new. We offer free
-              postage both ways, a lifetime warranty on all screen repairs, and
+              postage both ways, a 12-month warranty on all screen repairs, and
               a typical turnaround of just 1-3 working days.
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
@@ -522,7 +522,7 @@ function RegionalHubPage({
                 className="mt-2 text-[15px] text-white/80"
                 style={NAV_FONT}
               >
-                Free postage, lifetime warranty, and fast turnaround from
+                Free postage, 12-month warranty, and fast turnaround from
                 anywhere in {region.name}.
               </p>
             </div>
@@ -531,7 +531,7 @@ function RegionalHubPage({
               className="inline-flex flex-shrink-0 items-center justify-center rounded-full bg-white px-7 py-3.5 text-[14px] font-semibold text-red-600 transition-colors duration-200 hover:bg-red-50"
               style={NAV_FONT}
             >
-              Book a repair
+              Get Your Repair Quote
             </Link>
           </div>
         </section>
@@ -557,7 +557,7 @@ function CityPage({
   const regionSlug = `${region.slug}`;
 
   const seoTitle = `${brand.name} Repair in ${city.name} | Free Postal Repair Service | Repair My Phone Screen`;
-  const description = `Need your ${brand.name} screen repaired in ${city.name}? Free postal service — we'll send you a prepaid box. Lifetime warranty. Fast 1-3 day turnaround.`;
+  const description = `Need your ${brand.name} screen repaired in ${city.name}? Free postal service — we'll send you a prepaid box. 12-month warranty. Fast 1-3 day turnaround.`;
   const canonicalPath = `/${regionSlug}/${city.slug}`;
 
   useEffect(() => {
@@ -648,7 +648,7 @@ function CityPage({
 
   const trustSignals = [
     { title: "Free Postage", desc: "Both ways, fully tracked and insured." },
-    { title: "Lifetime Warranty", desc: "On all screen repairs we carry out." },
+    { title: "12-Month Warranty", desc: "On all screen repairs we carry out." },
     { title: "1-3 Day Turnaround", desc: "From receipt to dispatch." },
     { title: "Certified Technicians", desc: "Experienced, qualified professionals." },
   ];
@@ -667,8 +667,8 @@ function CityPage({
       a: `Yes. When you use our prepaid envelope, your device is covered by Royal Mail's tracked and insured service from the moment you post it in ${city.name} until it's delivered back to you after repair.`,
     },
     {
-      q: `Do you use genuine parts for ${brand.name} repairs?`,
-      a: `We use high-quality OEM-grade parts for all ${brand.name} repairs. Every replacement screen, battery, and component is rigorously tested to ensure it meets our quality standards before being fitted to your device.`,
+      q: `What parts do you use for ${brand.name} repairs?`,
+      a: `We use high-quality, rigorously tested replacement parts for all ${brand.name} repairs. Every replacement screen, battery, and component is tested to ensure it meets our quality standards before being fitted to your device.`,
     },
     {
       q: `Can I track my ${brand.name} repair?`,
@@ -765,7 +765,7 @@ function CityPage({
               {city.name} resident. We'll send a prepaid envelope directly to
               your door, repair your device at our specialist centre, and
               return it within 1-3 working days. Every repair is backed by a
-              lifetime warranty and postage is completely free both ways.
+              12-month warranty and postage is completely free both ways.
               {city.county &&
                 ` We serve customers throughout ${city.county} and the wider ${region.name} area.`}
             </p>
@@ -1036,7 +1036,7 @@ function CityPage({
                 className="mt-2 text-[15px] text-white/80"
                 style={NAV_FONT}
               >
-                Book online now. Free postage, lifetime warranty, and your
+                Book online now. Free postage, 12-month warranty, and your
                 device back within days.
               </p>
             </div>
@@ -1045,7 +1045,7 @@ function CityPage({
               className="inline-flex flex-shrink-0 items-center justify-center rounded-full bg-white px-7 py-3.5 text-[14px] font-semibold text-red-600 transition-colors duration-200 hover:bg-red-50"
               style={NAV_FONT}
             >
-              Book a repair
+              Get Your Repair Quote
             </Link>
           </div>
         </section>

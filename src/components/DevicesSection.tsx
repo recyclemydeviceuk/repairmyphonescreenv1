@@ -6,21 +6,24 @@ const NAV_FONT: React.CSSProperties = {
 
 const devices = [
   {
-    label: "Phones",
+    label: "Smartphone Repairs",
+    subLabel: "iPhone, Samsung, Huawei & more",
     img: "https://res.cloudinary.com/dn2sab6qc/image/upload/v1774638473/Untitled-design-Photoroom_diciwg.png",
-    alt: "Phone repairs",
+    alt: "Smartphone repairs",
     to: "/book-repair/phone",
   },
   {
-    label: "Tablets",
+    label: "iPad & Tablet Repairs",
+    subLabel: "iPad, Galaxy Tab & more",
     img: "https://res.cloudinary.com/dn2sab6qc/image/upload/v1774638472/ipad-11-10-9-2025-1765262033-Photoroom_tskotk.png",
-    alt: "Tablet repairs",
+    alt: "iPad and tablet repairs",
     to: "/book-repair/tablet",
   },
   {
-    label: "Watches",
+    label: "iWatch Repairs",
+    subLabel: "All Apple Watch models",
     img: "https://res.cloudinary.com/dn2sab6qc/image/upload/v1774638473/2024-FEB-PRODUCT-RANGE-1-1024x499-Photoroom_dcih9f.png",
-    alt: "Watch repairs",
+    alt: "iWatch repairs",
     to: "/book-repair/watch",
   },
 ];
@@ -37,13 +40,13 @@ export default function DevicesSection() {
               className="text-[26px] md:text-[30px] font-bold text-[#202124] leading-tight"
               style={NAV_FONT}
             >
-              Devices We Repair
+              Select Your Device
             </h2>
             <p
               className="text-[13px] text-[#5f6368] mt-1"
               style={NAV_FONT}
             >
-              Select your device and we'll fix it fast with genuine parts.
+              Select your device to get an instant repair price.
             </p>
           </div>
 
@@ -70,7 +73,7 @@ export default function DevicesSection() {
         </div>
 
         {/* Device cards grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           {devices.map((device) => (
             <Link
               key={device.label}
@@ -78,20 +81,27 @@ export default function DevicesSection() {
               className="group flex flex-col items-center"
             >
               {/* Card */}
-              <div className="w-full bg-[#f0f4ff] rounded-2xl overflow-hidden flex items-center justify-center p-6 aspect-[4/3] transition-shadow duration-200 group-hover:shadow-md">
+              <div className="w-full bg-gradient-to-br from-[#f0f4ff] to-[#fff0f0] rounded-3xl overflow-hidden flex items-center justify-center p-8 aspect-[4/3] transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1 border border-gray-100">
                 <img
                   src={device.img}
                   alt={device.alt}
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
+                  style={{ imageRendering: "crisp-edges" }}
                 />
               </div>
 
               {/* Label */}
               <p
-                className="mt-3 text-[15px] text-[#202124] font-medium"
+                className="mt-4 text-[18px] text-[#202124] font-bold group-hover:text-red-600 transition-colors"
                 style={NAV_FONT}
               >
                 {device.label}
+              </p>
+              <p
+                className="mt-1 text-[12px] text-[#5f6368]"
+                style={NAV_FONT}
+              >
+                {device.subLabel}
               </p>
             </Link>
           ))}

@@ -26,9 +26,9 @@ const notCovered = [
 ];
 
 const warrantyRows = [
-  { label: "Mobile / Tablet screen & component replacements", period: "6 Months" },
-  { label: "Battery replacements & refurbished device accessories", period: "6 Months" },
-  { label: "Liquid damage & software repair", period: "6 Months" },
+  { label: "Mobile / Tablet screen & component replacements", period: "12 Months" },
+  { label: "Battery replacements & refurbished device accessories", period: "12 Months" },
+  { label: "Liquid damage & software repair", period: "12 Months" },
 ];
 
 export default function WarrantyPage() {
@@ -82,7 +82,7 @@ export default function WarrantyPage() {
             Our Warranty
           </h1>
           <p className="mt-4 text-[15px] leading-8 text-[#5f6368]" style={NAV_FONT}>
-            We stand firmly behind every repair we carry out. All repairs are covered by our comprehensive 6-month warranty.
+            We stand firmly behind every repair we carry out. All repairs are covered by our comprehensive 12-month warranty.
           </p>
         </section>
 

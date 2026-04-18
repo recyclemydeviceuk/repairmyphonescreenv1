@@ -65,7 +65,7 @@ function NotFoundFallback() {
               className="inline-flex items-center justify-center rounded-full border border-red-600 px-7 py-3.5 text-[14px] font-semibold text-red-600 transition-colors hover:bg-red-50"
               style={NAV_FONT}
             >
-              Book a repair
+              Get Your Repair Quote
             </Link>
           </div>
         </section>
@@ -113,7 +113,7 @@ export default function GenericLocationPage() {
   }, [cityName]);
 
   const seoTitle = `Phone Screen Repairs in ${cityName} | All Brands | Free Postal Service | Repair My Phone Screen`;
-  const description = `Professional phone screen repair service in ${cityName} for all major brands including iPhone, Samsung, iPad, and more. Free postage both ways, lifetime warranty, and fast 1-3 day turnaround.`;
+  const description = `Professional phone screen repair service in ${cityName} for all major brands including iPhone, Samsung, iPad, and more. Free postage both ways, 12-month warranty, and fast 1-3 day turnaround.`;
   const canonicalPath = `/locations/${citySlug}`;
 
   useEffect(() => {
@@ -157,7 +157,7 @@ export default function GenericLocationPage() {
       label: "iPhone, Samsung, iPad & more",
     },
     {
-      value: "Lifetime Warranty",
+      value: "12-Month Warranty",
       label: "On every screen repair",
     },
     {
@@ -208,7 +208,7 @@ export default function GenericLocationPage() {
     },
     {
       q: `What warranty do you offer on screen repairs?`,
-      a: `Every screen repair comes with a lifetime warranty on parts and workmanship. If the replacement screen develops a fault related to our repair, we'll fix it free of charge — no questions asked.`,
+      a: `Every screen repair comes with a 12-month warranty on parts and workmanship. If the replacement screen develops a fault related to our repair, we'll fix it free of charge — no questions asked.`,
     },
   ];
 
@@ -288,7 +288,7 @@ export default function GenericLocationPage() {
               mail-in service means you don't need to visit a shop — we send
               you a prepaid envelope, repair your device at our specialist
               centre, and return it to your {cityName} address within 1-3
-              working days. Every screen repair comes with a lifetime warranty
+              working days. Every screen repair comes with a 12-month warranty
               and postage is free both ways.
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
@@ -420,7 +420,7 @@ export default function GenericLocationPage() {
                     style={NAV_FONT}
                   >
                     Professional {brand.name} screen repair service for{" "}
-                    {cityName} residents. Free postage &amp; lifetime warranty.
+                    {cityName} residents. Free postage &amp; 12-month warranty.
                   </p>
                   <span
                     className="mt-3 inline-block text-[14px] font-semibold text-red-600"
@@ -451,7 +451,7 @@ export default function GenericLocationPage() {
                     style={NAV_FONT}
                   >
                     Professional {brand.name} screen repair with free postage
-                    and lifetime warranty.
+                    and 12-month warranty.
                   </p>
                   <span
                     className="mt-3 inline-block text-[14px] font-semibold text-red-600"
@@ -590,7 +590,7 @@ export default function GenericLocationPage() {
                 className="mt-2 text-[15px] text-white/80"
                 style={NAV_FONT}
               >
-                All brands. Free postage. Lifetime warranty. Book your repair
+                All brands. Free postage. 12-month warranty. Book your repair
                 online in minutes.
               </p>
             </div>
@@ -599,7 +599,7 @@ export default function GenericLocationPage() {
               className="inline-flex flex-shrink-0 items-center justify-center rounded-full bg-white px-7 py-3.5 text-[14px] font-semibold text-red-600 transition-colors duration-200 hover:bg-red-50"
               style={NAV_FONT}
             >
-              Book a repair
+              Get Your Repair Quote
             </Link>
           </div>
         </section>

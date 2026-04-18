@@ -44,7 +44,7 @@ const CollectionIcon = ({ active }: { active: boolean }) => (
   </svg>
 );
 
-const ALL_POSTAGE_OPTIONS: { value: PostageType; title: string; description: string; flag?: "sameDayRepairs" | "collectionDelivery" }[] = [
+const ALL_POSTAGE_OPTIONS: { value: PostageType; title: string; description: string; flag?: "sameDayRepairs" | "collectionDelivery"; restriction?: string }[] = [
   {
     value: "print-label",
     title: "Print Our Label",
@@ -60,6 +60,7 @@ const ALL_POSTAGE_OPTIONS: { value: PostageType; title: string; description: str
     title: "Collection & Delivery",
     description: "We'll collect your device and deliver it back once repaired",
     flag: "collectionDelivery",
+    restriction: "Preston area only",
   },
 ];
 
@@ -156,6 +157,16 @@ export default function RepairCheckoutPage() {
       nextErrors.postageType = "Please select a postage option.";
     }
 
+    // Collection & Delivery is Preston-area only — enforce PR postcode
+    if (formData.postageType === "collection" && formData.postcode.trim()) {
+      const pc = formData.postcode.trim().toUpperCase().replace(/\s+/g, "");
+      const isPreston = /^PR([1-9]|25|26)[A-Z0-9]+$/.test(pc);
+      if (!isPreston) {
+        nextErrors.postcode =
+          "Collection & Delivery is only available for Preston area (PR) postcodes. Please choose another postage option or use a PR postcode.";
+      }
+    }
+
     if (!formData.termsAccepted) {
       nextErrors.termsAccepted = "You must agree to the Terms & Conditions.";
     }
@@ -185,6 +196,12 @@ export default function RepairCheckoutPage() {
         model: items[0]?.model ?? "",
         repairType: items[0]?.repairName ?? "",
         postageType: formData.postageType,
+        ...(formData.postageType === "collection"
+          ? {
+              collectionAddress: [formData.addressLine1, formData.city].filter(Boolean).join(", "),
+              collectionPostcode: formData.postcode,
+            }
+          : {}),
         items: items.map((item) => ({
           repairTypeId: item.id,
           repairTypeName: item.repairName,
@@ -434,6 +451,17 @@ export default function RepairCheckoutPage() {
                             {option.title}
                           </p>
                           <p className="mt-0.5 text-[12px] leading-[1.5] text-[#5f6368]">{option.description}</p>
+                          {option.restriction && (
+                            <div className="mt-2.5 flex items-center gap-1.5 rounded-full bg-red-100 px-2.5 py-1 w-fit border border-red-200">
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3 stroke-red-700">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                                <circle cx="12" cy="10" r="3" />
+                              </svg>
+                              <span className="text-[11px] font-bold text-red-700 tracking-wide">
+                                {option.restriction}
+                              </span>
+                            </div>
+                          )}
                         </div>
                       </button>
                     );

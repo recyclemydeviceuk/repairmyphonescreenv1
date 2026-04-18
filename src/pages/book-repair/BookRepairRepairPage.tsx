@@ -17,8 +17,7 @@ import BookRepairLayout from "../../components/book-repair/BookRepairLayout";
 import { addRepairCartItem } from "../../lib/repairCart";
 import { useSiteSettings } from "../../lib/SiteSettingsContext";
 import {
-  getPricingByModel,
-  getPublicBrandModels,
+  getPublicModelBundle,
   type PricingRuleResult,
   type BrandResult,
   type ModelResult,
@@ -103,7 +102,7 @@ function buildCategories(rules: PricingRuleResult[], modelName: string): RepairC
       originalPrice: rule.originalPrice,
       // Use backend values — these are stored per model+repair in the DB
       description: rule.description ?? `Professional ${rule.repairTypeName.toLowerCase()} service for your ${modelName}.`,
-      warranty:    rule.warranty    ?? "3 months",
+      warranty:    rule.warranty    ?? "12 Months",
       turnaround:  rule.turnaround  ?? "Up to 60 minutes",
       icon:        iconForItem,
       imageUrl:    rule.repairTypeImageUrl || undefined,
@@ -140,24 +139,28 @@ export default function BookRepairRepairPage() {
 
     (async () => {
       try {
-        // 1. Resolve brand + find the model object by slug
-        const { brand: brandData, models } = await getPublicBrandModels(brandSlug, sectionSlug);
-        if (cancelled) return;
-        setBrand(brandData);
-
-        const found = models.find(
-          m => m.slug === modelSlug ||
-               m.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") === modelSlug,
-        );
-        if (!found) { setLoading(false); return; }
-        setModel(found);
-
-        // 2. Fetch all pricing rules for this model (description/warranty/turnaround included)
-        const rules = await getPricingByModel(modelSlug);
+        // ⚡ Single round-trip: model + brand + all active pricing rules
+        const bundle = await getPublicModelBundle(modelSlug);
         if (cancelled) return;
 
+        if (!bundle) { setLoading(false); return; }
+
+        setBrand(bundle.brand);
+        setModel({
+          _id: bundle._id,
+          name: bundle.name,
+          slug: bundle.slug,
+          brandName: bundle.brandName,
+          deviceTypeName: bundle.deviceTypeName,
+          imageUrl: bundle.imageUrl,
+          seriesId: bundle.seriesId,
+          seriesName: bundle.seriesName,
+          isActive: bundle.isActive,
+        });
+
+        const rules: PricingRuleResult[] = bundle.pricing ?? [];
         if (rules.length > 0) {
-          const built = buildCategories(rules, found.name);
+          const built = buildCategories(rules, bundle.name);
           setCategories(built);
           // Default to first available category
           if (built.length > 0) setSelectedCategoryKey(built[0].key);
@@ -419,7 +422,22 @@ export default function BookRepairRepairPage() {
                               {item.warranty && (
                                 <div className={item.description ? "border-t border-[#eef2f7] pt-5" : ""}>
                                   <p className="text-[14px] font-semibold text-[#202124]">Warranty</p>
-                                  <p className="mt-2 text-[14px] font-medium text-red-600">{item.warranty}</p>
+                                  <p className="mt-2 text-[14px] font-medium text-red-600">
+                                    {item.warranty}
+                                  </p>
+                                  <a
+                                    href="/warranty"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="mt-2 inline-flex items-center gap-1 text-[12px] font-medium text-[#5f6368] hover:text-red-600 transition-colors"
+                                  >
+                                    View our warranty policy
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                                      <polyline points="15 3 21 3 21 9" />
+                                      <line x1="10" y1="14" x2="21" y2="3" />
+                                    </svg>
+                                  </a>
                                 </div>
                               )}
                             </div>

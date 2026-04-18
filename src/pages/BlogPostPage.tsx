@@ -291,13 +291,13 @@ export default function BlogPostPage() {
               className="text-[28px] font-bold text-white md:text-[34px]"
               style={NAV_FONT}
             >
-              Need a repair? Book now.
+              Need a repair? Get your quote today.
             </h2>
             <p
               className="mt-3 text-[15px] text-red-100 max-w-md mx-auto leading-7"
               style={NAV_FONT}
             >
-              Fast, affordable phone screen repairs with a lifetime warranty.
+              Fast, affordable phone screen repairs with a 12-month warranty.
               Get your device fixed today.
             </p>
             <Link
@@ -305,7 +305,7 @@ export default function BlogPostPage() {
               className="mt-6 inline-block rounded-full bg-white px-8 py-3 text-[14px] font-semibold text-red-600 hover:bg-red-50 transition-colors"
               style={NAV_FONT}
             >
-              Book a Repair
+              Get Your Repair Quote
             </Link>
           </div>
         </section>

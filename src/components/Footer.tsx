@@ -13,6 +13,7 @@ const columns = [
       { label: "Book a Repair", to: "/book-repair" },
       { label: "Track Your Repair", to: "/track-repair" },
       { label: "How It Works", to: "/how-it-works" },
+      { label: "Why Choose Us", to: "/why-choose-us" },
       { label: "About Us", to: "/about-us" },
       { label: "Contact Us", to: "/contact-us" },
       { label: "Latest News", to: "/latest-news" },

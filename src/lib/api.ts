@@ -8,6 +8,61 @@ const api = axios.create({
   timeout: 30000,
 });
 
+// ── Client-side cache & request de-dupe ───────────────────────────────────
+// For read-only public catalog endpoints (device types, brands, series,
+// models, pricing) we cache responses in memory with a short TTL and
+// de-duplicate concurrent in-flight requests for the same key.
+// This dramatically speeds up back-button navigation and avoids hitting
+// the same endpoint 10× from different components mounting in the same tick.
+type CacheEntry<T> = { value: T; expiresAt: number };
+const responseCache = new Map<string, CacheEntry<unknown>>();
+const inflight      = new Map<string, Promise<unknown>>();
+
+function getCached<T>(key: string): T | null {
+  const hit = responseCache.get(key);
+  if (!hit) return null;
+  if (hit.expiresAt < Date.now()) {
+    responseCache.delete(key);
+    return null;
+  }
+  return hit.value as T;
+}
+
+function setCached<T>(key: string, value: T, ttlMs: number) {
+  responseCache.set(key, { value, expiresAt: Date.now() + ttlMs });
+}
+
+/**
+ * Wraps a network fetch with:
+ *   1. In-memory cache (skips the request entirely while fresh)
+ *   2. Request deduplication (parallel callers share the same promise)
+ */
+async function cachedFetch<T>(key: string, ttlMs: number, fetcher: () => Promise<T>): Promise<T> {
+  const cached = getCached<T>(key);
+  if (cached !== null) return cached;
+
+  const existing = inflight.get(key);
+  if (existing) return existing as Promise<T>;
+
+  const promise = fetcher()
+    .then((value) => {
+      setCached(key, value, ttlMs);
+      return value;
+    })
+    .finally(() => {
+      inflight.delete(key);
+    });
+
+  inflight.set(key, promise);
+  return promise;
+}
+
+/** Clear cached catalog entries — useful after mutations in admin workflows */
+export function clearPublicCatalogCache() {
+  responseCache.clear();
+  inflight.clear();
+}
+
 // ── Checkout ──────────────────────────────────────────────────
 export interface CheckoutPayload {
   customerName: string;
@@ -18,6 +73,8 @@ export interface CheckoutPayload {
   model: string;
   repairType: string;
   postageType: string;
+  collectionAddress?: string;
+  collectionPostcode?: string;
   items: {
     repairTypeId: string;
     repairTypeName: string;
@@ -152,6 +209,36 @@ export async function getPricingByModel(modelSlug: string): Promise<PricingRuleR
   }
 }
 
+/**
+ * ⚡ Fast one-shot endpoint — returns the model, its brand, and all active
+ * pricing rules in a single network request. Replaces the old two-request
+ * flow of getPublicBrandModels() + getPricingByModel().
+ */
+export interface ModelBundleResult {
+  _id: string;
+  name: string;
+  slug: string;
+  brandName: string;
+  deviceTypeName: string;
+  imageUrl?: string;
+  seriesId?: string;
+  seriesName?: string;
+  isActive: boolean;
+  brand: BrandResult;
+  pricing: PricingRuleResult[];
+}
+
+export async function getPublicModelBundle(modelSlug: string): Promise<ModelBundleResult | null> {
+  return cachedFetch(`model-bundle:${modelSlug}`, 10 * 60 * 1000, async () => {
+    try {
+      const res = await api.get<{ data: ModelBundleResult }>(`/public/models/${modelSlug}/bundle`);
+      return res.data.data ?? null;
+    } catch {
+      return null;
+    }
+  });
+}
+
 // ── Public Catalog: Addons ────────────────────────────────────
 export interface AddonResult {
   _id: string;
@@ -180,8 +267,10 @@ export interface DeviceTypeResult {
 }
 
 export async function getPublicDeviceTypes(): Promise<DeviceTypeResult[]> {
-  const res = await api.get<{ data: DeviceTypeResult[] }>("/public/device-types");
-  return res.data.data ?? [];
+  return cachedFetch("device-types", 30 * 60 * 1000, async () => {
+    const res = await api.get<{ data: DeviceTypeResult[] }>("/public/device-types");
+    return res.data.data ?? [];
+  });
 }
 
 // ── Public Catalog: Brands ────────────────────────────────────
@@ -194,13 +283,30 @@ export interface BrandResult {
   logoUrl?: string;
   showcaseImageUrl?: string;
   modelCount: number;
+  hasSeries?: boolean;
   isActive: boolean;
 }
 
 export async function getPublicBrands(deviceTypeId?: string): Promise<BrandResult[]> {
-  const params = deviceTypeId ? { deviceTypeId } : {};
-  const res = await api.get<{ data: BrandResult[] }>("/public/brands", { params });
-  return res.data.data ?? [];
+  const key = `brands:${deviceTypeId ?? 'all'}`;
+  return cachedFetch(key, 15 * 60 * 1000, async () => {
+    const params = deviceTypeId ? { deviceTypeId } : {};
+    const res = await api.get<{ data: BrandResult[] }>("/public/brands", { params });
+    return res.data.data ?? [];
+  });
+}
+
+/**
+ * ⚡ Same as getPublicBrands but with a pre-computed `hasSeries` flag on
+ * each brand — lets the brand grid page skip its previous N+1 series probes.
+ */
+export async function getPublicBrandsWithMeta(deviceTypeId?: string): Promise<BrandResult[]> {
+  const key = `brands-meta:${deviceTypeId ?? 'all'}`;
+  return cachedFetch(key, 15 * 60 * 1000, async () => {
+    const params = deviceTypeId ? { deviceTypeId } : {};
+    const res = await api.get<{ data: BrandResult[] }>("/public/brands-with-meta", { params });
+    return res.data.data ?? [];
+  });
 }
 
 // ── Public Catalog: Brand Series ──────────────────────────────
@@ -215,8 +321,10 @@ export interface SeriesResult {
 }
 
 export async function getPublicBrandSeries(brandSlug: string): Promise<{ brand: BrandResult; series: SeriesResult[] }> {
-  const res = await api.get<{ data: { brand: BrandResult; series: SeriesResult[] } }>(`/public/brands/${brandSlug}/series`);
-  return res.data.data;
+  return cachedFetch(`brand-series:${brandSlug}`, 15 * 60 * 1000, async () => {
+    const res = await api.get<{ data: { brand: BrandResult; series: SeriesResult[] } }>(`/public/brands/${brandSlug}/series`);
+    return res.data.data;
+  });
 }
 
 // ── Public Catalog: Brand Models ──────────────────────────────
@@ -232,10 +340,53 @@ export interface ModelResult {
   isActive: boolean;
 }
 
-export async function getPublicBrandModels(brandSlug: string, seriesSlug?: string): Promise<{ brand: BrandResult; models: ModelResult[] }> {
-  const params = seriesSlug ? { seriesSlug } : {};
-  const res = await api.get<{ data: { brand: BrandResult; models: ModelResult[] } }>(`/public/brands/${brandSlug}/models`, { params });
-  return res.data.data;
+export interface BrandModelsPagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasMore: boolean;
+}
+
+export interface BrandModelsResponse {
+  brand: BrandResult;
+  models: ModelResult[];
+  pagination?: BrandModelsPagination;
+}
+
+/**
+ * ⚡ Now paginated + searchable on the server. Pass `page` / `limit` / `q`
+ * to load in chunks instead of all 90+ models at once.
+ *
+ * When called without pagination params, it still returns the first
+ * `limit` (default 30) models for backwards compatibility — callers that
+ * need more should pass explicit page/limit or use the `loadMore` pattern.
+ */
+export async function getPublicBrandModels(
+  brandSlug: string,
+  seriesSlug?: string,
+  opts?: { page?: number; limit?: number; q?: string },
+): Promise<BrandModelsResponse> {
+  const params: Record<string, string | number> = {};
+  if (seriesSlug)      params.seriesSlug = seriesSlug;
+  if (opts?.page)      params.page = opts.page;
+  if (opts?.limit)     params.limit = opts.limit;
+  if (opts?.q && opts.q.trim().length > 0) params.q = opts.q.trim();
+
+  // Only cache when there's no search query — search results shouldn't be
+  // cached aggressively because callers may re-query as the user types.
+  const shouldCache = !opts?.q;
+  const key = `brand-models:${brandSlug}:${seriesSlug ?? 'all'}:${opts?.page ?? 1}:${opts?.limit ?? 30}`;
+
+  const fetcher = async () => {
+    const res = await api.get<{ data: BrandModelsResponse }>(`/public/brands/${brandSlug}/models`, { params });
+    return res.data.data;
+  };
+
+  if (shouldCache) {
+    return cachedFetch(key, 10 * 60 * 1000, fetcher);
+  }
+  return fetcher();
 }
 
 // ── Public Catalog: Search ────────────────────────────────────

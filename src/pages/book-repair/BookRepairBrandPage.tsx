@@ -4,8 +4,7 @@ import { Loader2 } from "lucide-react";
 import BookRepairLayout from "../../components/book-repair/BookRepairLayout";
 import {
   getPublicDeviceTypes,
-  getPublicBrands,
-  getPublicBrandSeries,
+  getPublicBrandsWithMeta,
   type BrandResult,
   type DeviceTypeResult,
 } from "../../lib/api";
@@ -15,39 +14,30 @@ const VALID_TABS = ["phone", "tablet", "watch"];
 export default function BookRepairBrandPage() {
   const { tab } = useParams();
   const [brands, setBrands] = useState<BrandResult[]>([]);
-  const [brandHasSeries, setBrandHasSeries] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!tab || !VALID_TABS.includes(tab)) return;
 
+    let cancelled = false;
     setLoading(true);
 
-    // Get device type ID for this tab, then get brands
+    // ⚡ Before: 1 (device types) + 1 (brands) + 13 (series probes) = 15 requests
+    //    After:  1 (device types, cached) + 1 (brands-with-meta)    =  2 requests
     getPublicDeviceTypes()
       .then(async (types: DeviceTypeResult[]) => {
         const deviceType = types.find((t) => t.slug === tab);
-        if (!deviceType) { setBrands([]); return; }
-
-        const brandList = await getPublicBrands(deviceType._id);
-        setBrands(brandList);
-
-        // Check which brands have series
-        const seriesMap: Record<string, boolean> = {};
-        await Promise.all(
-          brandList.map(async (brand) => {
-            try {
-              const result = await getPublicBrandSeries(brand.slug);
-              seriesMap[brand.slug] = result.series.length > 0;
-            } catch {
-              seriesMap[brand.slug] = false;
-            }
-          })
-        );
-        setBrandHasSeries(seriesMap);
+        if (!deviceType) {
+          if (!cancelled) setBrands([]);
+          return;
+        }
+        const brandList = await getPublicBrandsWithMeta(deviceType._id);
+        if (!cancelled) setBrands(brandList);
       })
-      .catch(() => setBrands([]))
-      .finally(() => setLoading(false));
+      .catch(() => { if (!cancelled) setBrands([]); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+
+    return () => { cancelled = true; };
   }, [tab]);
 
   if (!tab || !VALID_TABS.includes(tab)) {
@@ -63,7 +53,7 @@ export default function BookRepairBrandPage() {
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-5">
           {brands.map((brand) => {
-            const hasSeries = brandHasSeries[brand.slug] ?? false;
+            const hasSeries = brand.hasSeries ?? false;
             const target = hasSeries
               ? `/book-repair/${tab}/${brand.slug}`
               : `/book-repair/${tab}/${brand.slug}/models`;
@@ -78,6 +68,7 @@ export default function BookRepairBrandPage() {
                   <img
                     src={brand.showcaseImageUrl || ""}
                     alt={brand.name}
+                    loading="lazy"
                     className="w-[120px] h-[120px] object-contain group-hover:scale-105 transition-transform duration-200"
                   />
                 </div>
@@ -89,6 +80,7 @@ export default function BookRepairBrandPage() {
                     <img
                       src={brand.logoUrl}
                       alt=""
+                      loading="lazy"
                       className="h-4 w-auto object-contain flex-shrink-0 opacity-70"
                     />
                   )}

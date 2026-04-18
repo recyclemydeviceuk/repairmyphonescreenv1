@@ -33,8 +33,8 @@ const categories = [
         a: "Most repairs are completed the same day your device arrives. You'll receive it back within 1–3 working days depending on your location.",
       },
       {
-        q: "Do you use genuine parts?",
-        a: "Yes. We use high-quality OEM and genuine manufacturer parts for all repairs to ensure the best performance and longevity.",
+        q: "What parts do you use for repairs?",
+        a: "We use high-quality, rigorously tested replacement parts for all our repairs to ensure the best performance and longevity for your device.",
       },
       {
         q: "What devices do you repair?",
@@ -51,7 +51,7 @@ const categories = [
       },
       {
         q: "Is my repair covered by a warranty?",
-        a: "All our repairs come with a 6-month warranty covering both parts and labour. If anything goes wrong, we'll fix it at no extra cost.",
+        a: "All our repairs come with a 12-month warranty covering both parts and labour. If anything goes wrong, we'll fix it at no extra cost.",
       },
       {
         q: "Do you offer free return delivery?",

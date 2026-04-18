@@ -99,7 +99,7 @@ export default function RepairCartPage() {
                 to="/book-repair"
                 className="mt-8 inline-flex items-center justify-center rounded-full bg-red-600 px-7 py-3 text-[14px] font-semibold text-white transition-colors duration-200 hover:bg-red-700"
               >
-                Book a repair
+                Get Your Repair Quote
               </Link>
             </div>
           ) : (
