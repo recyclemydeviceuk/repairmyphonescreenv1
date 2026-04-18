@@ -186,15 +186,32 @@ export default function RepairCheckoutPage() {
     setSubmitError("");
 
     try {
+      // Split cart into repairs vs accessory add-ons so the backend can
+      // validate them with their respective pipelines (PricingRule vs Addon).
+      const repairItems    = items.filter(i => i.category !== "accessory");
+      const accessoryItems = items.filter(i => i.category === "accessory");
+
+      // Guard: any accessory with a colour palette must have a colour chosen
+      const missingColor = accessoryItems.find(
+        i => i.addonColors && i.addonColors.length > 0 && !i.selectedColor,
+      );
+      if (missingColor) {
+        setSubmitError(`Please choose a colour for "${missingColor.model}" before continuing.`);
+        setSubmitting(false);
+        return;
+      }
+
+      const primaryRepair = repairItems[0] ?? items[0];
+
       // Create order on the backend
       const payload: CheckoutPayload = {
         customerName: `${formData.firstName} ${formData.lastName}`,
         customerEmail: formData.email,
         customerPhone: formData.phoneNumber,
-        device: items[0]?.tab ?? "phone",
-        brand: items[0]?.brandName ?? "",
-        model: items[0]?.model ?? "",
-        repairType: items[0]?.repairName ?? "",
+        device: primaryRepair?.tab ?? "phone",
+        brand: primaryRepair?.brandName ?? "",
+        model: primaryRepair?.model ?? "",
+        repairType: primaryRepair?.repairName ?? "",
         postageType: formData.postageType,
         ...(formData.postageType === "collection"
           ? {
@@ -202,13 +219,21 @@ export default function RepairCheckoutPage() {
               collectionPostcode: formData.postcode,
             }
           : {}),
-        items: items.map((item) => ({
+        items: repairItems.map((item) => ({
           repairTypeId: item.id,
           repairTypeName: item.repairName,
           modelId: item.modelSlug,
           modelName: item.model,
           quantity: item.quantity,
           unitPrice: item.unitPrice,
+        })),
+        addons: accessoryItems.map((item) => ({
+          addonId: item.addonId ?? item.id,
+          name: item.model,
+          price: item.unitPrice,
+          ...(item.selectedColor
+            ? { selectedColor: { name: item.selectedColor.name, hex: item.selectedColor.hex } }
+            : {}),
         })),
       };
 

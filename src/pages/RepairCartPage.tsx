@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Plus, Tag, X, Truck, Search } from "lucide-react";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
-import { formatRepairCartCurrency, useRepairCart, addRepairCartItem } from "../lib/repairCart";
+import { formatRepairCartCurrency, useRepairCart, addRepairCartItem, updateRepairCartItemColor } from "../lib/repairCart";
 import { getPublicAddons, validatePromoCode, type AddonResult } from "../lib/api";
 
 export default function RepairCartPage() {
@@ -17,7 +17,38 @@ export default function RepairCartPage() {
   // Only fetch addons when there are items in the cart
   useEffect(() => {
     if (itemCount === 0) { setAddons([]); return; }
-    getPublicAddons().then(setAddons).catch(() => setAddons([]));
+    getPublicAddons().then((fresh) => {
+      setAddons(fresh);
+
+      // ── Backfill: older cart items saved before colour variants landed
+      // may lack `addonColors`/`selectedColor`. Sync them from the fresh
+      // addon response so the cart row picker appears.
+      const cartItems = items;
+      let dirty = false;
+      const migrated = cartItems.map((item) => {
+        if (item.category !== "accessory") return item;
+        const match = fresh.find(a => a._id === item.id);
+        if (!match) return item;
+        const palette = match.colors ?? [];
+        if (palette.length === 0) return item;
+        // If either addonColors or selectedColor is missing, fill them.
+        const needsColors   = !item.addonColors || item.addonColors.length === 0;
+        const needsSelected = !item.selectedColor;
+        if (!needsColors && !needsSelected) return item;
+        dirty = true;
+        return {
+          ...item,
+          addonId:       match._id,
+          addonColors:   palette.map(c => ({ name: c.name, hex: c.hex })),
+          selectedColor: item.selectedColor ?? { name: palette[0].name, hex: palette[0].hex },
+        };
+      });
+      if (dirty) {
+        window.localStorage.setItem("repair-my-phone-screen-cart", JSON.stringify(migrated));
+        window.dispatchEvent(new Event("repair-cart-updated"));
+      }
+    }).catch(() => setAddons([]));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [itemCount]);
 
   const discountAmount = appliedPromo ? subtotal * appliedPromo.discount : 0;
@@ -41,6 +72,7 @@ export default function RepairCartPage() {
   };
 
   const handleAddAddon = (addon: AddonResult) => {
+    const hasColors = (addon.colors?.length ?? 0) > 0;
     addRepairCartItem({
       id: addon._id,
       brandName: "Accessory",
@@ -56,6 +88,10 @@ export default function RepairCartPage() {
       turnaround: "Ships with device",
       unitPrice: addon.price,
       warranty: "1 Year",
+      addonId: addon._id,
+      addonColors: addon.colors,
+      // Auto-pick the first colour as a sensible default
+      selectedColor: hasColors ? { name: addon.colors![0].name, hex: addon.colors![0].hex } : undefined,
     });
   };
 
@@ -127,7 +163,39 @@ export default function RepairCartPage() {
                             ) : (
                               <span className="rounded-full bg-red-50 px-3 py-1 font-medium text-red-600">Mail in</span>
                             )}
+                            {item.selectedColor && (
+                              <span className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3 py-1 font-medium text-[#202124]">
+                                <span
+                                  className="h-3 w-3 rounded-full border border-black/10"
+                                  style={{ background: item.selectedColor.hex }}
+                                />
+                                {item.selectedColor.name}
+                              </span>
+                            )}
                           </div>
+
+                          {/* Inline colour switcher — shown for accessory add-ons with a palette */}
+                          {item.category === "accessory" && item.addonColors && item.addonColors.length > 1 && (
+                            <div className="mt-3">
+                              <p className="text-[11px] font-semibold uppercase tracking-wide text-[#9aa0a6] mb-1.5">Choose colour</p>
+                              <div className="flex flex-wrap gap-1.5">
+                                {item.addonColors.map((c) => {
+                                  const isSelected = item.selectedColor?.hex.toLowerCase() === c.hex.toLowerCase();
+                                  return (
+                                    <button
+                                      key={c.hex + c.name}
+                                      type="button"
+                                      onClick={() => updateRepairCartItemColor(item.id, { name: c.name, hex: c.hex })}
+                                      title={c.name}
+                                      aria-label={`Choose ${c.name}`}
+                                      className={`h-5 w-5 rounded-full border shadow-inner transition-all ${isSelected ? 'ring-2 ring-red-500 ring-offset-1 border-black/20' : 'border-black/10 hover:scale-110'}`}
+                                      style={{ background: c.hex }}
+                                    />
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
 
@@ -254,44 +322,113 @@ export default function RepairCartPage() {
                 <h2 className="text-[20px] font-bold text-[#202124]">Quick Add-ons</h2>
                 <p className="mt-1 text-[13px] text-[#5f6368]">Ships together with your repair</p>
               </div>
-              <div className="flex flex-wrap gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {addons.map((addon) => {
-                  const isInCart = items.some(item => item.id === addon._id);
+                  const cartItem = items.find(item => item.id === addon._id);
+                  const isInCart = !!cartItem;
+                  const hasColors = (addon.colors?.length ?? 0) > 0;
+                  const selectedColor = cartItem?.selectedColor;
+
                   return (
-                    <div key={addon._id} className="group relative w-44 rounded-2xl border border-gray-100 bg-white p-3 transition-all duration-300 hover:border-red-100 hover:shadow-lg hover:shadow-red-500/5">
-                      <div className="aspect-square mb-3 overflow-hidden rounded-xl bg-gray-50 flex items-center justify-center p-4 group-hover:bg-red-50/50 transition-colors duration-300">
+                    <div
+                      key={addon._id}
+                      className="group relative flex items-stretch rounded-2xl border border-gray-100 bg-white overflow-hidden transition-all duration-300 hover:border-red-100 hover:shadow-lg hover:shadow-red-500/5"
+                    >
+                      {/* Left — image */}
+                      <div className="w-[118px] flex-shrink-0 bg-gray-50 flex items-center justify-center p-3 group-hover:bg-red-50/50 transition-colors duration-300">
                         <img
                           src={addon.imageUrl || `https://placehold.co/200x200/fff7f7/dc2626?text=${encodeURIComponent(addon.name)}`}
                           alt={addon.name}
-                          className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-110"
+                          className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105"
                           onError={(e) => {
                             (e.target as HTMLImageElement).src = "https://placehold.co/200x200/fff7f7/dc2626?text=" + encodeURIComponent(addon.name);
                           }}
                         />
                       </div>
-                      <div className="mb-3">
-                        <h3 className="text-[13px] font-bold text-[#202124] line-clamp-1">{addon.name}</h3>
-                        {addon.description && (
-                          <p className="mt-0.5 text-[11px] text-[#9aa0a6] line-clamp-1">{addon.description}</p>
-                        )}
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-[14px] font-bold text-red-600">
-                          {formatRepairCartCurrency(addon.price)}
-                        </span>
-                        {isInCart ? (
-                          <div className="flex items-center gap-1 rounded-full bg-green-50 px-2 py-1 text-[10px] font-bold text-green-600">
-                            Added
-                          </div>
-                        ) : (
-                          <button
-                            onClick={() => handleAddAddon(addon)}
-                            className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-red-50 text-red-600 transition-all duration-200 hover:bg-red-600 hover:text-white"
-                            aria-label={`Add ${addon.name} to cart`}
-                          >
-                            <Plus size={14} />
-                          </button>
-                        )}
+
+                      {/* Right — content */}
+                      <div className="flex-1 min-w-0 flex flex-col justify-between p-3.5">
+                        <div>
+                          <h3 className="text-[14px] font-bold text-[#202124] leading-tight line-clamp-1">{addon.name}</h3>
+                          {addon.description && (
+                            <p className="mt-0.5 text-[11px] text-[#9aa0a6] line-clamp-1">{addon.description}</p>
+                          )}
+
+                          {/* Colour palette — tappable swatches */}
+                          {hasColors && (
+                            <div className="mt-2">
+                              <p className="text-[9px] font-bold uppercase tracking-wider text-[#5f6368] mb-1 leading-tight">
+                                {isInCart && selectedColor
+                                  ? <>Colour · <span className="text-[#202124] normal-case">{selectedColor.name}</span></>
+                                  : <>Choose colour <span className="text-red-500">*</span></>}
+                              </p>
+                              <div className="flex flex-wrap gap-1">
+                                {addon.colors!.map((c) => {
+                                  const isSelected = isInCart && selectedColor?.hex.toLowerCase() === c.hex.toLowerCase();
+                                  return (
+                                    <button
+                                      key={c.hex + c.name}
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (isInCart) {
+                                          updateRepairCartItemColor(addon._id, { name: c.name, hex: c.hex });
+                                        } else {
+                                          addRepairCartItem({
+                                            id: addon._id,
+                                            brandName: "Accessory",
+                                            brandSlug: "accessory",
+                                            category: "accessory",
+                                            deviceImage: addon.imageUrl || "",
+                                            model: addon.name,
+                                            modelSlug: addon._id,
+                                            priceLabel: formatRepairCartCurrency(addon.price),
+                                            repairName: addon.name,
+                                            serviceType: "mail-in",
+                                            tab: "phone",
+                                            turnaround: "Ships with device",
+                                            unitPrice: addon.price,
+                                            warranty: "1 Year",
+                                            addonId: addon._id,
+                                            addonColors: addon.colors,
+                                            selectedColor: { name: c.name, hex: c.hex },
+                                          });
+                                        }
+                                      }}
+                                      title={c.name}
+                                      aria-label={`Choose ${c.name}`}
+                                      className={`relative h-4 w-4 rounded-full border shadow-sm transition-all ${
+                                        isSelected
+                                          ? 'ring-2 ring-red-500 ring-offset-1 border-white scale-110'
+                                          : 'border-white hover:scale-110'
+                                      }`}
+                                      style={{ background: c.hex, boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.12)' }}
+                                    />
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="mt-3 flex items-center justify-between">
+                          <span className="text-[15px] font-bold text-red-600">
+                            {formatRepairCartCurrency(addon.price)}
+                          </span>
+                          {isInCart ? (
+                            <div className="flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-1 text-[10px] font-bold text-green-600">
+                              Added
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => handleAddAddon(addon)}
+                              className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-red-50 text-red-600 transition-all duration-200 hover:bg-red-600 hover:text-white"
+                              aria-label={`Add ${addon.name} to cart`}
+                            >
+                              <Plus size={14} />
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   );

@@ -2,6 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 
 export type RepairCartServiceType = "mail-in";
 
+export type AddonCartColor = {
+  name: string;
+  hex: string;
+};
+
 export type RepairCartItem = {
   id: string;
   brandName: string;
@@ -19,6 +24,11 @@ export type RepairCartItem = {
   unitPrice: number;
   warranty: string;
   category?: "repair" | "accessory";
+  /** For add-ons with colour variants — the colour the customer chose */
+  selectedColor?: AddonCartColor;
+  /** Used when the item is an accessory add-on — lets us look up colour palette + backend addonId */
+  addonId?: string;
+  addonColors?: AddonCartColor[];
 };
 
 export type AddRepairCartResult = {
@@ -126,6 +136,13 @@ export function addRepairCartItem(item: Omit<RepairCartItem, "quantity">): AddRe
     items: updatedItems,
     status: "added",
   };
+}
+
+export function updateRepairCartItemColor(id: string, color: AddonCartColor) {
+  const items = readRepairCartItems();
+  const updated = items.map(item => item.id === id ? { ...item, selectedColor: color } : item);
+  writeRepairCartItems(updated);
+  return updated;
 }
 
 export function updateRepairCartItemQuantity(id: string, quantity: number) {

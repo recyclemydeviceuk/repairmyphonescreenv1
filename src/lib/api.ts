@@ -83,7 +83,12 @@ export interface CheckoutPayload {
     quantity: number;
     unitPrice: number;
   }[];
-  addons?: { addonId: string; name: string; price: number }[];
+  addons?: {
+    addonId: string;
+    name: string;
+    price: number;
+    selectedColor?: { name: string; hex: string };
+  }[];
 }
 
 export interface CheckoutResult {
@@ -240,6 +245,12 @@ export async function getPublicModelBundle(modelSlug: string): Promise<ModelBund
 }
 
 // ── Public Catalog: Addons ────────────────────────────────────
+export interface AddonColorOption {
+  name: string;
+  hex: string;
+  imageUrl?: string;
+}
+
 export interface AddonResult {
   _id: string;
   name: string;
@@ -249,6 +260,7 @@ export interface AddonResult {
   isActive: boolean;
   imageUrl?: string;
   sortOrder: number;
+  colors?: AddonColorOption[];
 }
 
 export async function getPublicAddons(): Promise<AddonResult[]> {
