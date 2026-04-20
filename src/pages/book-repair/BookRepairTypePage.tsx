@@ -4,12 +4,19 @@ import { Loader2 } from "lucide-react";
 import BookRepairLayout from "../../components/book-repair/BookRepairLayout";
 import { getPublicDeviceTypes, type DeviceTypeResult } from "../../lib/api";
 
-// Fallback images per device type slug
-const DEVICE_IMAGES: Record<string, string> = {
-  phone: "https://res.cloudinary.com/dn2sab6qc/image/upload/v1774638473/Untitled-design-Photoroom_diciwg.png",
-  tablet: "https://res.cloudinary.com/dn2sab6qc/image/upload/v1774638472/ipad-11-10-9-2025-1765262033-Photoroom_tskotk.png",
-  watch: "https://res.cloudinary.com/dn2sab6qc/image/upload/v1774638473/2024-FEB-PRODUCT-RANGE-1-1024x499-Photoroom_dcih9f.png",
-};
+/** Desired display order — anything not listed here appears afterwards */
+const SLUG_ORDER = ["iphone", "samsung", "phone", "tablet", "watch"];
+
+function sortDeviceTypes(types: DeviceTypeResult[]): DeviceTypeResult[] {
+  return [...types].sort((a, b) => {
+    const ai = SLUG_ORDER.indexOf(a.slug);
+    const bi = SLUG_ORDER.indexOf(b.slug);
+    if (ai === -1 && bi === -1) return a.name.localeCompare(b.name);
+    if (ai === -1) return 1;
+    if (bi === -1) return -1;
+    return ai - bi;
+  });
+}
 
 export default function BookRepairTypePage() {
   const [deviceTypes, setDeviceTypes] = useState<DeviceTypeResult[]>([]);
@@ -17,7 +24,7 @@ export default function BookRepairTypePage() {
 
   useEffect(() => {
     getPublicDeviceTypes()
-      .then(setDeviceTypes)
+      .then((d) => setDeviceTypes(sortDeviceTypes(d)))
       .catch(() => setDeviceTypes([]))
       .finally(() => setLoading(false));
   }, []);
@@ -37,16 +44,27 @@ export default function BookRepairTypePage() {
               className="group rounded-[26px] border border-[#e8eaed] bg-white overflow-hidden hover:border-red-500 hover:shadow-lg transition-all duration-200"
             >
               <div className="aspect-[4/3] bg-[#f5f5f7] flex items-center justify-center px-5 py-5">
-                <img
-                  src={device.imageUrl || DEVICE_IMAGES[device.slug] || ""}
-                  alt={device.name}
-                  className="w-full h-full object-contain group-hover:scale-[1.02] transition-transform duration-200"
-                />
+                {device.imageUrl ? (
+                  <img
+                    src={device.imageUrl}
+                    alt={device.name}
+                    className="w-full h-full object-contain group-hover:scale-[1.02] transition-transform duration-200"
+                  />
+                ) : (
+                  <div className="text-[14px] text-[#9aa0a6] text-center">
+                    {device.name}
+                  </div>
+                )}
               </div>
               <div className="px-6 py-4 border-t border-[#eef0f2]">
                 <h2 className="text-[22px] font-semibold text-[#202124] group-hover:text-red-600 transition-colors">
                   {device.name}
                 </h2>
+                {device.subtitle && (
+                  <p className="mt-1 text-[13px] text-[#5f6368]">
+                    {device.subtitle}
+                  </p>
+                )}
               </div>
             </Link>
           ))}

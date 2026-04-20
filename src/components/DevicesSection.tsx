@@ -7,20 +7,6 @@ const NAV_FONT: React.CSSProperties = {
   fontFamily: "'Google Sans', 'Roboto', Arial, sans-serif",
 };
 
-/**
- * Sublabel map keyed by DeviceType.slug — purely cosmetic helper text
- * rendered under the name. Images come straight from the backend
- * (DeviceType.imageUrl) so the homepage and Book-a-Repair flow always
- * stay in sync.
- */
-const SUBLABELS: Record<string, string> = {
-  iphone:  "All iPhone models",
-  samsung: "All Galaxy models",
-  phone:   "Huawei, Pixel, Xiaomi & more",
-  tablet:  "iPad, Galaxy Tab & more",
-  watch:   "All Apple Watch models",
-};
-
 /** Desired display order of tabs (anything not in this list appears afterwards) */
 const SLUG_ORDER = ["iphone", "samsung", "phone", "tablet", "watch"];
 
@@ -33,12 +19,6 @@ function sortDeviceTypes(types: DeviceTypeResult[]): DeviceTypeResult[] {
     if (bi === -1) return -1;
     return ai - bi;
   });
-}
-
-/** "Phone" → "Phone Repairs", but leave labels that already end in "Repairs" alone */
-function toLabel(name: string): string {
-  if (/repairs?$/i.test(name)) return name;
-  return `${name} Repairs`;
 }
 
 export default function DevicesSection() {
@@ -125,9 +105,9 @@ export default function DevicesSection() {
             }`}
           >
             {types.map((device) => {
-              const subLabel = SUBLABELS[device.slug] ?? `${device.brandCount} brand${device.brandCount === 1 ? '' : 's'} available`;
               const img = device.imageUrl;
-              const label = toLabel(device.name);
+              const label = device.name;
+              const subLabel = device.subtitle?.trim() || `${device.brandCount} brand${device.brandCount === 1 ? '' : 's'} available`;
               return (
                 <Link
                   key={device._id}
