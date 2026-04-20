@@ -279,7 +279,10 @@ export interface DeviceTypeResult {
 }
 
 export async function getPublicDeviceTypes(): Promise<DeviceTypeResult[]> {
-  return cachedFetch("device-types", 30 * 60 * 1000, async () => {
+  // ttl kept short (2 min) so admin changes to device types (name, image,
+  // new slugs) surface quickly on customer pages. Cache key includes a
+  // version suffix so old stale entries from previous builds are ignored.
+  return cachedFetch("device-types:v2", 2 * 60 * 1000, async () => {
     const res = await api.get<{ data: DeviceTypeResult[] }>("/public/device-types");
     return res.data.data ?? [];
   });
