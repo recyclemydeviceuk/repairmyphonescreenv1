@@ -1,48 +1,71 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { Loader2 } from "lucide-react";
+import { getPublicDeviceTypes, type DeviceTypeResult } from "../lib/api";
 
 const NAV_FONT: React.CSSProperties = {
   fontFamily: "'Google Sans', 'Roboto', Arial, sans-serif",
 };
 
-const devices = [
-  {
-    label: "iPhone Repairs",
+/**
+ * Client-side fallback map keyed by DeviceType.slug — provides a pretty
+ * sublabel and a default image when the backend hasn't set one yet.
+ * The backend `name` and `imageUrl` always take priority.
+ */
+const FALLBACKS: Record<string, { subLabel: string; img: string }> = {
+  iphone: {
     subLabel: "All iPhone models",
     img: "https://res.cloudinary.com/dn2sab6qc/image/upload/v1774638473/Untitled-design-Photoroom_diciwg.png",
-    alt: "iPhone repairs",
-    to: "/book-repair/iphone",
   },
-  {
-    label: "Samsung Repairs",
+  samsung: {
     subLabel: "All Galaxy models",
     img: "https://res.cloudinary.com/dn2sab6qc/image/upload/v1774638473/Untitled-design-Photoroom_diciwg.png",
-    alt: "Samsung repairs",
-    to: "/book-repair/samsung",
   },
-  {
-    label: "Other Smartphones",
+  phone: {
     subLabel: "Huawei, Pixel, Xiaomi & more",
     img: "https://res.cloudinary.com/dn2sab6qc/image/upload/v1774638473/Untitled-design-Photoroom_diciwg.png",
-    alt: "Other smartphone repairs",
-    to: "/book-repair/phone",
   },
-  {
-    label: "iPad & Tablet Repairs",
+  tablet: {
     subLabel: "iPad, Galaxy Tab & more",
     img: "https://res.cloudinary.com/dn2sab6qc/image/upload/v1774638472/ipad-11-10-9-2025-1765262033-Photoroom_tskotk.png",
-    alt: "iPad and tablet repairs",
-    to: "/book-repair/tablet",
   },
-  {
-    label: "iWatch Repairs",
+  watch: {
     subLabel: "All Apple Watch models",
     img: "https://res.cloudinary.com/dn2sab6qc/image/upload/v1774638473/2024-FEB-PRODUCT-RANGE-1-1024x499-Photoroom_dcih9f.png",
-    alt: "iWatch repairs",
-    to: "/book-repair/watch",
   },
-];
+};
+
+/** Desired display order of tabs (anything not in this list appears afterwards) */
+const SLUG_ORDER = ["iphone", "samsung", "phone", "tablet", "watch"];
+
+function sortDeviceTypes(types: DeviceTypeResult[]): DeviceTypeResult[] {
+  return [...types].sort((a, b) => {
+    const ai = SLUG_ORDER.indexOf(a.slug);
+    const bi = SLUG_ORDER.indexOf(b.slug);
+    if (ai === -1 && bi === -1) return a.name.localeCompare(b.name);
+    if (ai === -1) return 1;
+    if (bi === -1) return -1;
+    return ai - bi;
+  });
+}
+
+/** "Phone" → "Phone Repairs", but leave labels that already end in "Repairs" alone */
+function toLabel(name: string): string {
+  if (/repairs?$/i.test(name)) return name;
+  return `${name} Repairs`;
+}
 
 export default function DevicesSection() {
+  const [types, setTypes] = useState<DeviceTypeResult[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getPublicDeviceTypes()
+      .then((data) => setTypes(sortDeviceTypes(data)))
+      .catch(() => setTypes([]))
+      .finally(() => setLoading(false));
+  }, []);
+
   return (
     <section className="w-full bg-white py-14 md:py-20">
       <div className="max-w-7xl mx-auto px-6">
@@ -86,40 +109,79 @@ export default function DevicesSection() {
           </Link>
         </div>
 
-        {/* Device cards grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-5">
-          {devices.map((device) => (
-            <Link
-              key={device.label}
-              to={device.to}
-              className="group flex flex-col items-center"
-            >
-              {/* Card */}
-              <div className="w-full bg-gradient-to-br from-[#f0f4ff] to-[#fff0f0] rounded-3xl overflow-hidden flex items-center justify-center p-8 aspect-[4/3] transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1 border border-gray-100">
-                <img
-                  src={device.img}
-                  alt={device.alt}
-                  className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
-                  style={{ imageRendering: "crisp-edges" }}
-                />
-              </div>
+        {/* Loading skeleton */}
+        {loading && (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 size={28} className="animate-spin text-red-500" />
+          </div>
+        )}
 
-              {/* Label */}
-              <p
-                className="mt-4 text-[18px] text-[#202124] font-bold group-hover:text-red-600 transition-colors"
-                style={NAV_FONT}
-              >
-                {device.label}
-              </p>
-              <p
-                className="mt-1 text-[12px] text-[#5f6368]"
-                style={NAV_FONT}
-              >
-                {device.subLabel}
-              </p>
-            </Link>
-          ))}
-        </div>
+        {/* Empty */}
+        {!loading && types.length === 0 && (
+          <div className="py-16 text-center">
+            <p className="text-[14px] text-[#5f6368]" style={NAV_FONT}>
+              No device types available at the moment.
+            </p>
+          </div>
+        )}
+
+        {/* Device cards grid */}
+        {!loading && types.length > 0 && (
+          <div
+            className={`grid gap-4 md:gap-5 ${
+              types.length >= 5
+                ? "grid-cols-2 sm:grid-cols-3 lg:grid-cols-5"
+                : types.length === 4
+                ? "grid-cols-2 sm:grid-cols-2 lg:grid-cols-4"
+                : types.length === 3
+                ? "grid-cols-1 sm:grid-cols-3"
+                : "grid-cols-1 sm:grid-cols-2"
+            }`}
+          >
+            {types.map((device) => {
+              const fb = FALLBACKS[device.slug] ?? { subLabel: `${device.brandCount} brand${device.brandCount === 1 ? '' : 's'} available`, img: "" };
+              const img = device.imageUrl || fb.img;
+              const label = toLabel(device.name);
+              return (
+                <Link
+                  key={device._id}
+                  to={`/book-repair/${device.slug}`}
+                  className="group flex flex-col items-center"
+                >
+                  {/* Card */}
+                  <div className="w-full bg-gradient-to-br from-[#f0f4ff] to-[#fff0f0] rounded-3xl overflow-hidden flex items-center justify-center p-8 aspect-[4/3] transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1 border border-gray-100">
+                    {img ? (
+                      <img
+                        src={img}
+                        alt={label}
+                        className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
+                        style={{ imageRendering: "crisp-edges" }}
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-[#9aa0a6]" style={NAV_FONT}>
+                        {device.name}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Label */}
+                  <p
+                    className="mt-4 text-[18px] text-[#202124] font-bold group-hover:text-red-600 transition-colors text-center"
+                    style={NAV_FONT}
+                  >
+                    {label}
+                  </p>
+                  <p
+                    className="mt-1 text-[12px] text-[#5f6368] text-center"
+                    style={NAV_FONT}
+                  >
+                    {fb.subLabel}
+                  </p>
+                </Link>
+              );
+            })}
+          </div>
+        )}
 
       </div>
     </section>
