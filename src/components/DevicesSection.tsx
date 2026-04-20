@@ -8,31 +8,17 @@ const NAV_FONT: React.CSSProperties = {
 };
 
 /**
- * Client-side fallback map keyed by DeviceType.slug — provides a pretty
- * sublabel and a default image when the backend hasn't set one yet.
- * The backend `name` and `imageUrl` always take priority.
+ * Sublabel map keyed by DeviceType.slug — purely cosmetic helper text
+ * rendered under the name. Images come straight from the backend
+ * (DeviceType.imageUrl) so the homepage and Book-a-Repair flow always
+ * stay in sync.
  */
-const FALLBACKS: Record<string, { subLabel: string; img: string }> = {
-  iphone: {
-    subLabel: "All iPhone models",
-    img: "https://res.cloudinary.com/dn2sab6qc/image/upload/v1774638473/Untitled-design-Photoroom_diciwg.png",
-  },
-  samsung: {
-    subLabel: "All Galaxy models",
-    img: "https://res.cloudinary.com/dn2sab6qc/image/upload/v1774638473/Untitled-design-Photoroom_diciwg.png",
-  },
-  phone: {
-    subLabel: "Huawei, Pixel, Xiaomi & more",
-    img: "https://res.cloudinary.com/dn2sab6qc/image/upload/v1774638473/Untitled-design-Photoroom_diciwg.png",
-  },
-  tablet: {
-    subLabel: "iPad, Galaxy Tab & more",
-    img: "https://res.cloudinary.com/dn2sab6qc/image/upload/v1774638472/ipad-11-10-9-2025-1765262033-Photoroom_tskotk.png",
-  },
-  watch: {
-    subLabel: "All Apple Watch models",
-    img: "https://res.cloudinary.com/dn2sab6qc/image/upload/v1774638473/2024-FEB-PRODUCT-RANGE-1-1024x499-Photoroom_dcih9f.png",
-  },
+const SUBLABELS: Record<string, string> = {
+  iphone:  "All iPhone models",
+  samsung: "All Galaxy models",
+  phone:   "Huawei, Pixel, Xiaomi & more",
+  tablet:  "iPad, Galaxy Tab & more",
+  watch:   "All Apple Watch models",
 };
 
 /** Desired display order of tabs (anything not in this list appears afterwards) */
@@ -139,8 +125,8 @@ export default function DevicesSection() {
             }`}
           >
             {types.map((device) => {
-              const fb = FALLBACKS[device.slug] ?? { subLabel: `${device.brandCount} brand${device.brandCount === 1 ? '' : 's'} available`, img: "" };
-              const img = device.imageUrl || fb.img;
+              const subLabel = SUBLABELS[device.slug] ?? `${device.brandCount} brand${device.brandCount === 1 ? '' : 's'} available`;
+              const img = device.imageUrl;
               const label = toLabel(device.name);
               return (
                 <Link
@@ -175,7 +161,7 @@ export default function DevicesSection() {
                     className="mt-1 text-[12px] text-[#5f6368] text-center"
                     style={NAV_FONT}
                   >
-                    {fb.subLabel}
+                    {subLabel}
                   </p>
                 </Link>
               );
