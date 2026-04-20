@@ -143,7 +143,12 @@ function App() {
   return (
     <SiteSettingsContext.Provider value={siteSettings}>
       <PayPalScriptProvider options={{ clientId: PAYPAL_CLIENT_ID, currency: "GBP", intent: "capture" }}>
-        <BrowserRouter>
+        <BrowserRouter
+          future={{
+            v7_startTransition:    true,
+            v7_relativeSplatPath:  true,
+          }}
+        >
           <ScrollToHash />
           <WhatsAppButton />
           <Routes>
