@@ -6,10 +6,24 @@ const NAV_FONT: React.CSSProperties = {
 
 const devices = [
   {
-    label: "Smartphone Repairs",
-    subLabel: "iPhone, Samsung, Huawei & more",
+    label: "iPhone Repairs",
+    subLabel: "All iPhone models",
     img: "https://res.cloudinary.com/dn2sab6qc/image/upload/v1774638473/Untitled-design-Photoroom_diciwg.png",
-    alt: "Smartphone repairs",
+    alt: "iPhone repairs",
+    to: "/book-repair/iphone",
+  },
+  {
+    label: "Samsung Repairs",
+    subLabel: "All Galaxy models",
+    img: "https://res.cloudinary.com/dn2sab6qc/image/upload/v1774638473/Untitled-design-Photoroom_diciwg.png",
+    alt: "Samsung repairs",
+    to: "/book-repair/samsung",
+  },
+  {
+    label: "Other Smartphones",
+    subLabel: "Huawei, Pixel, Xiaomi & more",
+    img: "https://res.cloudinary.com/dn2sab6qc/image/upload/v1774638473/Untitled-design-Photoroom_diciwg.png",
+    alt: "Other smartphone repairs",
     to: "/book-repair/phone",
   },
   {
@@ -73,7 +87,7 @@ export default function DevicesSection() {
         </div>
 
         {/* Device cards grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-5">
           {devices.map((device) => (
             <Link
               key={device.label}

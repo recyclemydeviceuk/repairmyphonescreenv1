@@ -112,7 +112,7 @@ function buildCategories(rules: PricingRuleResult[], modelName: string): RepairC
   return CATEGORY_ORDER.filter(k => map.has(k)).map(k => map.get(k)!);
 }
 
-const VALID_TABS = ["phone", "tablet", "watch"];
+const VALID_TABS = ["iphone", "samsung", "phone", "tablet", "watch"];
 
 // ── Component ────────────────────────────────────────────────────────────────
 
@@ -389,7 +389,7 @@ export default function BookRepairRepairPage() {
                                     repairName:  displayTitle,
                                     sectionSlug,
                                     serviceType: "mail-in",
-                                    tab:         tab as "phone" | "tablet" | "watch",
+                                    tab:         tab as "iphone" | "samsung" | "phone" | "tablet" | "watch",
                                     turnaround:  item.turnaround,
                                     unitPrice:   item.unitPrice,
                                     warranty:    item.warranty,

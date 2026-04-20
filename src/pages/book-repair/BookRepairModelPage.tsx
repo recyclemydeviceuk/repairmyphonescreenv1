@@ -8,7 +8,7 @@ import {
   type ModelResult,
 } from "../../lib/api";
 
-const VALID_TABS = ["phone", "tablet", "watch"];
+const VALID_TABS = ["iphone", "samsung", "phone", "tablet", "watch"];
 const PAGE_SIZE  = 30;
 
 function slugify(value: string) {

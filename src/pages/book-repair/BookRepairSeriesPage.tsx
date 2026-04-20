@@ -8,7 +8,7 @@ import {
   type SeriesResult,
 } from "../../lib/api";
 
-const VALID_TABS = ["phone", "tablet", "watch"];
+const VALID_TABS = ["iphone", "samsung", "phone", "tablet", "watch"];
 
 export default function BookRepairSeriesPage() {
   const { tab, brandSlug } = useParams();

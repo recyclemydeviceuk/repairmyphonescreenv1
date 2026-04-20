@@ -19,7 +19,7 @@ export type RepairCartItem = {
   repairName: string;
   sectionSlug?: string;
   serviceType: RepairCartServiceType;
-  tab: "phone" | "tablet" | "watch";
+  tab: "iphone" | "samsung" | "phone" | "tablet" | "watch";
   turnaround: string;
   unitPrice: number;
   warranty: string;
