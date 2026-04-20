@@ -359,7 +359,7 @@ export default function BookRepairRepairPage() {
                             <img
                               src={item.imageUrl || brandImage}
                               alt={displayTitle}
-                              className="h-[88px] w-[88px] object-contain"
+                              className="h-[160px] w-[160px] md:h-[180px] md:w-[180px] object-contain drop-shadow-sm"
                             />
                             <h2 className="mt-5 max-w-[280px] text-[22px] font-semibold leading-8 text-red-600">
                               {displayTitle}

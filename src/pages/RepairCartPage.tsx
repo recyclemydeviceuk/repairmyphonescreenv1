@@ -356,13 +356,13 @@ export default function RepairCartPage() {
 
                           {/* Colour palette — tappable swatches */}
                           {hasColors && (
-                            <div className="mt-2">
-                              <p className="text-[9px] font-bold uppercase tracking-wider text-[#5f6368] mb-1 leading-tight">
+                            <div className="mt-2.5">
+                              <p className="text-[10px] font-bold uppercase tracking-wider text-[#202124] mb-2 leading-tight">
                                 {isInCart && selectedColor
-                                  ? <>Colour · <span className="text-[#202124] normal-case">{selectedColor.name}</span></>
+                                  ? <>Colour · <span className="text-red-600 normal-case">{selectedColor.name}</span></>
                                   : <>Choose colour <span className="text-red-500">*</span></>}
                               </p>
-                              <div className="flex flex-wrap gap-1">
+                              <div className="flex flex-wrap gap-2">
                                 {addon.colors!.map((c) => {
                                   const isSelected = isInCart && selectedColor?.hex.toLowerCase() === c.hex.toLowerCase();
                                   return (
@@ -397,12 +397,12 @@ export default function RepairCartPage() {
                                       }}
                                       title={c.name}
                                       aria-label={`Choose ${c.name}`}
-                                      className={`relative h-4 w-4 rounded-full border shadow-sm transition-all ${
+                                      className={`relative h-7 w-7 rounded-full border-2 shadow-md transition-all ${
                                         isSelected
-                                          ? 'ring-2 ring-red-500 ring-offset-1 border-white scale-110'
-                                          : 'border-white hover:scale-110'
+                                          ? 'ring-2 ring-red-500 ring-offset-2 border-white scale-110'
+                                          : 'border-white hover:scale-110 hover:shadow-lg'
                                       }`}
-                                      style={{ background: c.hex, boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.12)' }}
+                                      style={{ background: c.hex, boxShadow: isSelected ? 'inset 0 0 0 1px rgba(0,0,0,0.15), 0 4px 8px rgba(0,0,0,0.15)' : 'inset 0 0 0 1px rgba(0,0,0,0.2), 0 2px 4px rgba(0,0,0,0.08)' }}
                                     />
                                   );
                                 })}
@@ -419,6 +419,16 @@ export default function RepairCartPage() {
                             <div className="flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-1 text-[10px] font-bold text-green-600">
                               Added
                             </div>
+                          ) : hasColors ? (
+                            // Colour palette addon — forbid one-click add.
+                            // Customer must click a swatch to both pick + add.
+                            <span
+                              title="Choose a colour above to add this item"
+                              className="inline-flex items-center gap-1 rounded-full border border-dashed border-red-200 bg-red-50/50 px-2.5 py-1 text-[10px] font-bold text-red-500 cursor-not-allowed select-none"
+                              aria-label="Choose a colour first"
+                            >
+                              Pick colour ↑
+                            </span>
                           ) : (
                             <button
                               onClick={() => handleAddAddon(addon)}
