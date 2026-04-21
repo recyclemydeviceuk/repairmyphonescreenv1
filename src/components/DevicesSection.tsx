@@ -78,25 +78,14 @@ export default function DevicesSection() {
             </p>
           </div>
 
-          {/* Red arrow button — outlined default, filled on hover */}
+          {/* See All button */}
           <Link
             to="/book-repair"
-            className="flex-shrink-0 w-11 h-11 rounded-full border-2 border-red-600 bg-transparent flex items-center justify-center mt-1 transition-all duration-300 ease-in-out hover:bg-red-600 group/arrow"
+            className="flex-shrink-0 inline-flex items-center gap-2 rounded-full border-2 border-red-600 bg-transparent px-5 py-2.5 text-[14px] font-semibold text-red-600 mt-1 transition-all duration-300 ease-in-out hover:bg-red-600 hover:text-white"
+            style={NAV_FONT}
             aria-label="View all devices"
           >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="stroke-red-600 group-hover/arrow:stroke-white transition-all duration-300 ease-in-out"
-            >
-              <line x1="7" y1="17" x2="17" y2="7" />
-              <polyline points="7 7 17 7 17 17" />
-            </svg>
+            See All
           </Link>
         </div>
 
