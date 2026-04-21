@@ -50,7 +50,7 @@ type RepairCategory = {
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 const CATEGORY_UI: Record<string, { key: string; label: string; icon: CategoryIcon }> = {
-  screen:        { key: "screen",  label: "Screen",             icon: "screen"  },
+  screen:        { key: "screen",  label: "Front Screen",       icon: "screen"  },
   back_glass:    { key: "back",    label: "Back cover",         icon: "back"    },
   battery:       { key: "battery", label: "Battery & charging", icon: "battery" },
   charging_port: { key: "battery", label: "Battery & charging", icon: "battery" },
