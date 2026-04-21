@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { getPublicDeviceTypes, type DeviceTypeResult } from "../lib/api";
 
 const NAV_FONT: React.CSSProperties = {
@@ -24,6 +24,9 @@ function sortDeviceTypes(types: DeviceTypeResult[]): DeviceTypeResult[] {
 export default function DevicesSection() {
   const [types, setTypes] = useState<DeviceTypeResult[]>([]);
   const [loading, setLoading] = useState(true);
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const [canScrollPrev, setCanScrollPrev] = useState(false);
+  const [canScrollNext, setCanScrollNext] = useState(false);
 
   useEffect(() => {
     getPublicDeviceTypes()
@@ -31,6 +34,28 @@ export default function DevicesSection() {
       .catch(() => setTypes([]))
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const update = () => {
+      setCanScrollPrev(el.scrollLeft > 4);
+      setCanScrollNext(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
+    };
+    update();
+    el.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
+    return () => {
+      el.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
+    };
+  }, [types.length, loading]);
+
+  const scrollByPage = (dir: 1 | -1) => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    el.scrollBy({ left: dir * el.clientWidth, behavior: "smooth" });
+  };
 
   return (
     <section className="w-full bg-white py-14 md:py-20">
@@ -91,61 +116,88 @@ export default function DevicesSection() {
           </div>
         )}
 
-        {/* Device cards grid */}
+        {/* Device cards carousel — 3 per slide on desktop, 2 on tablet, 1 on mobile */}
         {!loading && types.length > 0 && (
-          <div
-            className={`grid gap-4 md:gap-5 ${
-              types.length >= 5
-                ? "grid-cols-2 sm:grid-cols-3 lg:grid-cols-5"
-                : types.length === 4
-                ? "grid-cols-2 sm:grid-cols-2 lg:grid-cols-4"
-                : types.length === 3
-                ? "grid-cols-1 sm:grid-cols-3"
-                : "grid-cols-1 sm:grid-cols-2"
-            }`}
-          >
-            {types.map((device) => {
-              const img = device.imageUrl;
-              const label = device.name;
-              const subLabel = device.subtitle?.trim() || `${device.brandCount} brand${device.brandCount === 1 ? '' : 's'} available`;
-              return (
-                <Link
-                  key={device._id}
-                  to={`/book-repair/${device.slug}`}
-                  className="group flex flex-col items-center"
-                >
-                  {/* Card */}
-                  <div className="w-full bg-gradient-to-br from-[#f0f4ff] to-[#fff0f0] rounded-3xl overflow-hidden flex items-center justify-center p-8 aspect-[4/3] transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1 border border-gray-100">
-                    {img ? (
-                      <img
-                        src={img}
-                        alt={label}
-                        className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
-                        style={{ imageRendering: "crisp-edges" }}
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-[#9aa0a6]" style={NAV_FONT}>
-                        {device.name}
-                      </div>
-                    )}
-                  </div>
+          <div className="relative">
+            {/* Prev button */}
+            <button
+              type="button"
+              onClick={() => scrollByPage(-1)}
+              disabled={!canScrollPrev}
+              aria-label="Previous devices"
+              className={`hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 z-10 w-12 h-12 rounded-full bg-white border border-gray-200 shadow-lg items-center justify-center transition-all duration-200 ${
+                canScrollPrev
+                  ? "opacity-100 hover:bg-red-600 hover:border-red-600 hover:text-white text-[#202124]"
+                  : "opacity-40 cursor-not-allowed text-[#9aa0a6]"
+              }`}
+            >
+              <ChevronLeft size={22} />
+            </button>
 
-                  {/* Label */}
-                  <p
-                    className="mt-4 text-[18px] text-[#202124] font-bold group-hover:text-red-600 transition-colors text-center"
-                    style={NAV_FONT}
+            {/* Next button */}
+            <button
+              type="button"
+              onClick={() => scrollByPage(1)}
+              disabled={!canScrollNext}
+              aria-label="Next devices"
+              className={`hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-10 w-12 h-12 rounded-full bg-white border border-gray-200 shadow-lg items-center justify-center transition-all duration-200 ${
+                canScrollNext
+                  ? "opacity-100 hover:bg-red-600 hover:border-red-600 hover:text-white text-[#202124]"
+                  : "opacity-40 cursor-not-allowed text-[#9aa0a6]"
+              }`}
+            >
+              <ChevronRight size={22} />
+            </button>
+
+            {/* Scroller */}
+            <div
+              ref={scrollerRef}
+              className="flex gap-6 md:gap-8 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-4 -mx-6 px-6 scrollbar-hide"
+              style={{ scrollbarWidth: "none" }}
+            >
+              {types.map((device) => {
+                const img = device.imageUrl;
+                const label = device.name;
+                const subLabel = device.subtitle?.trim() || `${device.brandCount} brand${device.brandCount === 1 ? '' : 's'} available`;
+                return (
+                  <Link
+                    key={device._id}
+                    to={`/book-repair/${device.slug}`}
+                    className="group flex flex-col items-center flex-shrink-0 snap-start w-full sm:w-[calc((100%-2rem)/2)] lg:w-[calc((100%-4rem)/3)]"
                   >
-                    {label}
-                  </p>
-                  <p
-                    className="mt-1 text-[12px] text-[#5f6368] text-center"
-                    style={NAV_FONT}
-                  >
-                    {subLabel}
-                  </p>
-                </Link>
-              );
-            })}
+                    {/* Card */}
+                    <div className="w-full bg-gradient-to-br from-[#f0f4ff] to-[#fff0f0] rounded-[32px] overflow-hidden flex items-center justify-center p-12 md:p-16 aspect-[4/3] transition-all duration-300 group-hover:shadow-2xl group-hover:-translate-y-1 border border-gray-100">
+                      {img ? (
+                        <img
+                          src={img}
+                          alt={label}
+                          className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
+                          style={{ imageRendering: "crisp-edges" }}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-[#9aa0a6] text-2xl" style={NAV_FONT}>
+                          {device.name}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Label */}
+                    <p
+                      className="mt-6 text-[22px] md:text-[24px] text-[#202124] font-bold group-hover:text-red-600 transition-colors text-center"
+                      style={NAV_FONT}
+                    >
+                      {label}
+                    </p>
+                    <p
+                      className="mt-1.5 text-[14px] text-[#5f6368] text-center"
+                      style={NAV_FONT}
+                    >
+                      {subLabel}
+                    </p>
+                  </Link>
+                );
+              })}
+            </div>
           </div>
         )}
 
