@@ -4,6 +4,7 @@ import { Navigate, Link, useParams } from "react-router-dom";
 import BookRepairLayout from "../../components/book-repair/BookRepairLayout";
 import {
   getPublicBrandSeries,
+  getPublicBrandsWithMeta,
   type BrandResult,
   type SeriesResult,
 } from "../../lib/api";
@@ -15,6 +16,7 @@ export default function BookRepairSeriesPage() {
   const [brand, setBrand] = useState<BrandResult | null>(null);
   const [series, setSeries] = useState<SeriesResult[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isSoloBrand, setIsSoloBrand] = useState(false);
 
   useEffect(() => {
     if (!brandSlug) return;
@@ -29,6 +31,17 @@ export default function BookRepairSeriesPage() {
       .catch(() => { setBrand(null); setSeries([]); })
       .finally(() => setLoading(false));
   }, [brandSlug]);
+
+  // Single-brand device types (e.g. iPhone, Samsung) auto-skip the brand picker,
+  // so Back should jump all the way to the device-type page to avoid a redirect loop.
+  useEffect(() => {
+    if (!brand?.deviceTypeId) return;
+    let cancelled = false;
+    getPublicBrandsWithMeta(brand.deviceTypeId)
+      .then((list) => { if (!cancelled) setIsSoloBrand(list.length === 1); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [brand?.deviceTypeId]);
 
   if (!tab || !VALID_TABS.includes(tab) || !brandSlug) {
     return <Navigate to="/book-repair" replace />;
@@ -45,7 +58,7 @@ export default function BookRepairSeriesPage() {
   }
 
   return (
-    <BookRepairLayout backTo={`/book-repair/${tab}`} title="Choose series">
+    <BookRepairLayout backTo={isSoloBrand ? "/book-repair" : `/book-repair/${tab}`} title="Choose series">
       {loading ? (
         <div className="flex items-center justify-center py-20">
           <Loader2 size={28} className="animate-spin text-red-500" />

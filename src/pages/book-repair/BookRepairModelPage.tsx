@@ -4,6 +4,7 @@ import { Link, Navigate, useParams } from "react-router-dom";
 import BookRepairLayout from "../../components/book-repair/BookRepairLayout";
 import {
   getPublicBrandModels,
+  getPublicBrandsWithMeta,
   type BrandResult,
   type ModelResult,
 } from "../../lib/api";
@@ -41,6 +42,7 @@ export default function BookRepairModelPage() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const debouncedQuery = useDebounced(searchQuery, 250);
+  const [isSoloBrand, setIsSoloBrand] = useState(false);
 
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const reqIdRef    = useRef(0);
@@ -106,6 +108,17 @@ export default function BookRepairModelPage() {
     return () => observer.disconnect();
   }, [hasMore, loading, loadingMore, brandSlug, sectionSlug, debouncedQuery, page]);
 
+  // Single-brand device types (e.g. iPhone, Samsung) auto-skip the brand picker,
+  // so Back should jump all the way to the device-type page to avoid a redirect loop.
+  useEffect(() => {
+    if (!brand?.deviceTypeId) return;
+    let cancelled = false;
+    getPublicBrandsWithMeta(brand.deviceTypeId)
+      .then((list) => { if (!cancelled) setIsSoloBrand(list.length === 1); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [brand?.deviceTypeId]);
+
   if (!tab || !VALID_TABS.includes(tab) || !brandSlug) {
     return <Navigate to="/book-repair" replace />;
   }
@@ -114,7 +127,9 @@ export default function BookRepairModelPage() {
     return <Navigate to={`/book-repair/${tab}`} replace />;
   }
 
-  const backTo = sectionSlug ? `/book-repair/${tab}/${brandSlug}` : `/book-repair/${tab}`;
+  const backTo = sectionSlug
+    ? `/book-repair/${tab}/${brandSlug}`
+    : (isSoloBrand ? "/book-repair" : `/book-repair/${tab}`);
 
   return (
     <BookRepairLayout backTo={backTo} title="Choose model">
