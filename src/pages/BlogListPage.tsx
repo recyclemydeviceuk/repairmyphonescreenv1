@@ -32,7 +32,7 @@ export default function BlogListPage() {
   const [hasMore, setHasMore] = useState(false);
 
   useEffect(() => {
-    document.title = "Latest News - Repair Tips & News | Repair My Phone Screen";
+    document.title = "Blogs - Repair Tips & News | Repair My Phone Screen";
     const meta = document.querySelector('meta[name="description"]');
     if (meta) {
       meta.setAttribute("content", "Read the latest phone repair tips, news and guides from Repair My Phone Screen. Expert advice on iPhone, Samsung, iPad repairs and more.");
@@ -76,7 +76,7 @@ export default function BlogListPage() {
             className="text-[12px] font-semibold uppercase tracking-[0.16em] text-red-600"
             style={NAV_FONT}
           >
-            Latest News
+            Blogs
           </p>
           <h1
             className="mt-3 text-[38px] font-bold leading-tight text-[#202124] md:text-[52px]"
@@ -132,7 +132,7 @@ export default function BlogListPage() {
                 {posts.map((post) => (
                   <Link
                     key={post._id}
-                    to={`/latest-news/${post.slug}`}
+                    to={`/blogs/${post.slug}`}
                     className="group rounded-[28px] border border-[#f3f4f6] bg-white overflow-hidden transition-shadow hover:shadow-lg"
                   >
                     {/* Image */}

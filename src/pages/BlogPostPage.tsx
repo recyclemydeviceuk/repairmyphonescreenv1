@@ -50,7 +50,7 @@ export default function BlogPostPage() {
             canonical.rel = "canonical";
             document.head.appendChild(canonical);
           }
-          canonical.href = `${window.location.origin}/latest-news/${data.slug}`;
+          canonical.href = `${window.location.origin}/blogs/${data.slug}`;
 
           // JSON-LD
           let jsonLd = document.getElementById("blog-jsonld");
@@ -121,7 +121,7 @@ export default function BlogPostPage() {
             The blog post you're looking for doesn't exist or has been removed.
           </p>
           <Link
-            to="/latest-news"
+            to="/blogs"
             className="mt-6 rounded-full bg-red-600 px-6 py-3 text-[14px] font-semibold text-white hover:bg-red-700 transition-colors"
             style={NAV_FONT}
           >
@@ -148,14 +148,14 @@ export default function BlogPostPage() {
         <article className="mx-auto max-w-3xl px-6 pt-16 pb-16 md:pt-24">
           {/* Back link */}
           <Link
-            to="/latest-news"
+            to="/blogs"
             className="inline-flex items-center gap-2 text-[13px] font-medium text-[#5f6368] hover:text-red-600 transition-colors mb-8"
             style={NAV_FONT}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="15 18 9 12 15 6" />
             </svg>
-            Back to Latest News
+            Back to Blogs
           </Link>
 
           {/* Category badge */}
@@ -244,7 +244,7 @@ export default function BlogPostPage() {
               {related.map((rp) => (
                 <Link
                   key={rp._id}
-                  to={`/latest-news/${rp.slug}`}
+                  to={`/blogs/${rp.slug}`}
                   className="group rounded-[28px] border border-[#f3f4f6] bg-white overflow-hidden transition-shadow hover:shadow-lg"
                 >
                   <div className="aspect-[16/9] w-full overflow-hidden">

@@ -172,8 +172,8 @@ function App() {
             <Route path="/book-repair/:tab/:brandSlug/:sectionSlug/models/:modelSlug" element={<BookRepairRepairPage />} />
 
             {/* Blog pages */}
-            <Route path="/latest-news" element={<BlogListPage />} />
-            <Route path="/latest-news/:slug" element={<BlogPostPage />} />
+            <Route path="/blogs" element={<BlogListPage />} />
+            <Route path="/blogs/:slug" element={<BlogPostPage />} />
 
             {/* Location SEO pages — matching old WordPress URLs */}
             <Route path="/locations" element={<AllLocationsPage />} />

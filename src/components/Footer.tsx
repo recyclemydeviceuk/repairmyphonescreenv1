@@ -16,7 +16,7 @@ const columns = [
       { label: "Why Choose Us", to: "/why-choose-us" },
       { label: "About Us", to: "/about-us" },
       { label: "Contact Us", to: "/contact-us" },
-      { label: "Latest News", to: "/latest-news" },
+      { label: "Blogs", to: "/blogs" },
       { label: "All Locations", to: "/locations" },
     ],
   },
