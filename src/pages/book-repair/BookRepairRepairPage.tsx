@@ -351,17 +351,20 @@ export default function BookRepairRepairPage() {
                 <div className="overflow-hidden rounded-[30px] border border-red-500 bg-white">
                   {selectedCategory.items.map((item, index) => {
                     const displayTitle = cleanTitle(item.title, modelName);
+                    const ItemIcon = getTabIcon(item.icon, tab);
                     return (
                       <div key={item._id} className={index > 0 ? "border-t border-[#f1f3f4]" : ""}>
                         <div className="grid md:grid-cols-[1.1fr_1.3fr]">
 
                           {/* Left: image + price + CTA */}
                           <div className="flex flex-col items-center justify-center px-8 py-10 text-center md:border-r md:border-[#f1f3f4]">
-                            <img
-                              src={item.imageUrl || brandImage}
-                              alt={displayTitle}
-                              className="h-[160px] w-[160px] md:h-[180px] md:w-[180px] object-contain drop-shadow-sm"
-                            />
+                            <div className="flex h-[160px] w-[160px] md:h-[180px] md:w-[180px] items-center justify-center rounded-[32px] bg-[#f5f7fb]">
+                              <ItemIcon
+                                size={72}
+                                strokeWidth={1.6}
+                                className="text-red-600"
+                              />
+                            </div>
                             <h2 className="mt-5 max-w-[280px] text-[22px] font-semibold leading-8 text-red-600">
                               {displayTitle}
                             </h2>
