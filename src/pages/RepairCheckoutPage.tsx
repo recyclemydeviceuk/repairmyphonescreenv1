@@ -72,12 +72,12 @@ const defaultCheckoutDetails: RepairCheckoutDetails = {
   email: "",
   firstName: "",
   lastName: "",
-  marketingConsent: false,
+  marketingConsent: true,
   mobileNetwork: "",
   phoneNumber: "",
   postageType: "",
   postcode: "",
-  termsAccepted: false,
+  termsAccepted: true,
 };
 
 const networkOptions = ["EE", "O2", "Vodafone", "Three", "Tesco Mobile", "giffgaff"];
