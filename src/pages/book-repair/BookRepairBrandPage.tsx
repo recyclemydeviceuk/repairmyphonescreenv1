@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Navigate, Link, useParams } from "react-router-dom";
+import { Navigate, Link, useNavigate, useParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import BookRepairLayout from "../../components/book-repair/BookRepairLayout";
 import {
@@ -13,6 +13,7 @@ const VALID_TABS = ["iphone", "samsung", "phone", "tablet", "watch"];
 
 export default function BookRepairBrandPage() {
   const { tab } = useParams();
+  const navigate = useNavigate();
   const [brands, setBrands] = useState<BrandResult[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -32,13 +33,26 @@ export default function BookRepairBrandPage() {
           return;
         }
         const brandList = await getPublicBrandsWithMeta(deviceType._id);
-        if (!cancelled) setBrands(brandList);
+        if (cancelled) return;
+
+        // Single-brand categories (e.g. iPhone → Apple, Samsung → Samsung) skip
+        // the brand picker and go straight to series/models for the one brand.
+        if (brandList.length === 1) {
+          const only = brandList[0];
+          const target = (only.hasSeries ?? false)
+            ? `/book-repair/${tab}/${only.slug}`
+            : `/book-repair/${tab}/${only.slug}/models`;
+          navigate(target, { replace: true });
+          return;
+        }
+
+        setBrands(brandList);
       })
       .catch(() => { if (!cancelled) setBrands([]); })
       .finally(() => { if (!cancelled) setLoading(false); });
 
     return () => { cancelled = true; };
-  }, [tab]);
+  }, [tab, navigate]);
 
   if (!tab || !VALID_TABS.includes(tab)) {
     return <Navigate to="/book-repair" replace />;
