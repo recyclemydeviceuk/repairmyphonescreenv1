@@ -13,8 +13,6 @@ export interface SiteGeneralSettings {
 export interface SiteOperationsSettings {
   maintenanceMode:     boolean;
   maintenanceMessage:  string;
-  acceptNewBookings:   boolean;
-  sameDayRepairs:      boolean;
   collectionDelivery:  boolean;
   turnaroundTime:      string;
 }
@@ -37,8 +35,6 @@ const defaults: SiteSettings = {
   operations: {
     maintenanceMode:    false,
     maintenanceMessage: '',
-    acceptNewBookings:  true,
-    sameDayRepairs:     true,
     collectionDelivery: true,
     turnaroundTime:     '1-2 hours',
   },

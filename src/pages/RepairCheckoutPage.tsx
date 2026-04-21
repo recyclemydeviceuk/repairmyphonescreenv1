@@ -44,7 +44,7 @@ const CollectionIcon = ({ active }: { active: boolean }) => (
   </svg>
 );
 
-const ALL_POSTAGE_OPTIONS: { value: PostageType; title: string; description: string; flag?: "sameDayRepairs" | "collectionDelivery"; restriction?: string }[] = [
+const ALL_POSTAGE_OPTIONS: { value: PostageType; title: string; description: string; flag?: "collectionDelivery"; restriction?: string }[] = [
   {
     value: "print-label",
     title: "Print Our Label",
@@ -85,12 +85,11 @@ const networkOptions = ["EE", "O2", "Vodafone", "Three", "Tesco Mobile", "giffga
 export default function RepairCheckoutPage() {
   const navigate = useNavigate();
   const { itemCount, items, subtotal } = useRepairCart();
-  const { operations: { sameDayRepairs, collectionDelivery } } = useSiteSettings();
+  const { operations: { collectionDelivery } } = useSiteSettings();
 
   // Build the available postage options based on admin settings
   const postageOptions = ALL_POSTAGE_OPTIONS.filter(opt => {
     if (opt.flag === "collectionDelivery") return collectionDelivery;
-    if (opt.flag === "sameDayRepairs")     return sameDayRepairs;
     return true;
   });
   const existingSession = readRepairCheckoutSession();

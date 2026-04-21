@@ -58,8 +58,6 @@ const defaultSettings: SiteSettings = {
   operations: {
     maintenanceMode:    false,
     maintenanceMessage: '',
-    acceptNewBookings:  true,
-    sameDayRepairs:     true,
     collectionDelivery: true,
     turnaroundTime:     '1-2 hours',
   },
@@ -122,8 +120,6 @@ function App() {
             operations: {
               maintenanceMode:    o.maintenanceMode    ?? false,
               maintenanceMessage: o.maintenanceMessage ?? '',
-              acceptNewBookings:  o.acceptNewBookings  ?? true,
-              sameDayRepairs:     o.sameDayRepairs     ?? true,
               collectionDelivery: o.collectionDelivery ?? true,
               turnaroundTime:     o.turnaroundTime     ?? '1-2 hours',
             },

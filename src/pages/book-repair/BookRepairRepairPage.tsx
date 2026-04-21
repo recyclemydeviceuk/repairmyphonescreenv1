@@ -15,7 +15,6 @@ import Footer from "../../components/Footer";
 import Header from "../../components/Header";
 import BookRepairLayout from "../../components/book-repair/BookRepairLayout";
 import { addRepairCartItem } from "../../lib/repairCart";
-import { useSiteSettings } from "../../lib/SiteSettingsContext";
 import {
   getPublicModelBundle,
   type PricingRuleResult,
@@ -123,7 +122,6 @@ const VALID_TABS = ["iphone", "samsung", "phone", "tablet", "watch"];
 export default function BookRepairRepairPage() {
   const { tab, brandSlug, sectionSlug, modelSlug } = useParams();
   const navigate = useNavigate();
-  const { operations: { acceptNewBookings } } = useSiteSettings();
 
   const [selectedCategoryKey, setSelectedCategoryKey] = useState("screen");
   const [categories, setCategories] = useState<RepairCategory[]>([]);
@@ -421,40 +419,33 @@ export default function BookRepairRepairPage() {
                                 </span>
                               )}
                             </div>
-                            {acceptNewBookings ? (
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  const result = addRepairCartItem({
-                                    id:          [tab, brandSlug, sectionSlug ?? "base", modelSlug, displayTitle.toLowerCase().replace(/\s+/g, "-"), "mail-in"].join(":"),
-                                    brandName,
-                                    brandSlug:   brandSlug!,
-                                    deviceImage: model?.imageUrl || brandImage,
-                                    model:       modelName,
-                                    modelSlug:   modelSlug!,
-                                    priceLabel:  item.price,
-                                    repairName:  displayTitle,
-                                    sectionSlug,
-                                    serviceType: "mail-in",
-                                    tab:         tab as "iphone" | "samsung" | "phone" | "tablet" | "watch",
-                                    turnaround:  item.turnaround,
-                                    unitPrice:   item.unitPrice,
-                                    warranty:    item.warranty,
-                                  });
-                                  setToast(result.status === "added"
-                                    ? { title: displayTitle, variant: "added" }
-                                    : { title: displayTitle, variant: "exists" });
-                                }}
-                                className="mt-6 inline-flex items-center justify-center rounded-full bg-red-600 px-7 py-3 text-[14px] font-semibold text-white transition-colors duration-200 hover:bg-red-700"
-                              >
-                                Book a repair
-                              </button>
-                            ) : (
-                              <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
-                                <p className="text-[13px] font-semibold text-amber-700">Bookings are currently closed</p>
-                                <p className="text-[12px] text-amber-600 mt-0.5">We're not accepting new bookings right now. Please check back soon.</p>
-                              </div>
-                            )}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const result = addRepairCartItem({
+                                  id:          [tab, brandSlug, sectionSlug ?? "base", modelSlug, displayTitle.toLowerCase().replace(/\s+/g, "-"), "mail-in"].join(":"),
+                                  brandName,
+                                  brandSlug:   brandSlug!,
+                                  deviceImage: model?.imageUrl || brandImage,
+                                  model:       modelName,
+                                  modelSlug:   modelSlug!,
+                                  priceLabel:  item.price,
+                                  repairName:  displayTitle,
+                                  sectionSlug,
+                                  serviceType: "mail-in",
+                                  tab:         tab as "iphone" | "samsung" | "phone" | "tablet" | "watch",
+                                  turnaround:  item.turnaround,
+                                  unitPrice:   item.unitPrice,
+                                  warranty:    item.warranty,
+                                });
+                                setToast(result.status === "added"
+                                  ? { title: displayTitle, variant: "added" }
+                                  : { title: displayTitle, variant: "exists" });
+                              }}
+                              className="mt-6 inline-flex items-center justify-center rounded-full bg-red-600 px-7 py-3 text-[14px] font-semibold text-white transition-colors duration-200 hover:bg-red-700"
+                            >
+                              Book a repair
+                            </button>
                           </div>
 
                           {/* Right: description / warranty — ALL from backend */}
