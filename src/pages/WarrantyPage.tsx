@@ -1,11 +1,152 @@
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Check, ChevronDown, Loader2, Search as SearchIcon } from "lucide-react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import { submitWarrantyClaim } from "../lib/api";
+import {
+  getPublicBrandModels,
+  getPublicBrandsWithMeta,
+  submitWarrantyClaim,
+  type BrandResult,
+  type ModelResult,
+} from "../lib/api";
 
 const NAV_FONT: React.CSSProperties = {
   fontFamily: "'Google Sans', 'Roboto', Arial, sans-serif",
 };
+
+type Option = { value: string; label: string; image?: string };
+
+function SearchableDropdown({
+  label,
+  placeholder,
+  value,
+  onChange,
+  options,
+  loading,
+  disabled,
+  required,
+  emptyText = "No results",
+}: {
+  label: string;
+  placeholder: string;
+  value: string;
+  onChange: (opt: Option) => void;
+  options: Option[];
+  loading?: boolean;
+  disabled?: boolean;
+  required?: boolean;
+  emptyText?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  useEffect(() => {
+    if (open) {
+      setQuery("");
+      setTimeout(() => searchRef.current?.focus(), 30);
+    }
+  }, [open]);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return options;
+    return options.filter((o) => o.label.toLowerCase().includes(q));
+  }, [options, query]);
+
+  const selected = options.find((o) => o.value === value);
+
+  return (
+    <div className="flex flex-col gap-1.5 relative" ref={wrapperRef}>
+      <label className="text-[13px] font-medium text-[#202124]" style={NAV_FONT}>
+        {label} {required && <span className="text-red-600">*</span>}
+      </label>
+
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => setOpen((v) => !v)}
+        className={`flex items-center justify-between rounded-[14px] border bg-[#fafafa] px-4 py-3 text-[14px] outline-none transition ${
+          open ? "border-red-400 ring-2 ring-red-100" : "border-[#e8eaed] hover:border-[#d1d5db]"
+        } ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+        style={NAV_FONT}
+      >
+        <span className={`truncate text-left ${selected ? "text-[#202124]" : "text-[#adb5bd]"}`}>
+          {selected ? selected.label : placeholder}
+        </span>
+        <ChevronDown
+          size={16}
+          className={`text-[#5f6368] flex-shrink-0 ml-3 transition-transform ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+
+      {open && (
+        <div className="absolute left-0 right-0 top-full mt-2 z-30 rounded-[16px] border border-[#e8eaed] bg-white shadow-xl overflow-hidden">
+          <div className="flex items-center gap-2 px-4 py-3 border-b border-[#f1f3f4]">
+            <SearchIcon size={15} className="text-[#9aa0a6] flex-shrink-0" />
+            <input
+              ref={searchRef}
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={`Search ${label.toLowerCase()}...`}
+              className="flex-1 bg-transparent text-[13px] text-[#202124] placeholder-[#adb5bd] outline-none"
+              style={NAV_FONT}
+            />
+          </div>
+
+          <div className="max-h-64 overflow-y-auto py-1">
+            {loading ? (
+              <div className="flex items-center justify-center py-8 text-[#9aa0a6]">
+                <Loader2 size={18} className="animate-spin" />
+              </div>
+            ) : filtered.length === 0 ? (
+              <p className="px-4 py-6 text-center text-[13px] text-[#9aa0a6]" style={NAV_FONT}>
+                {emptyText}
+              </p>
+            ) : (
+              filtered.map((opt) => {
+                const isActive = opt.value === value;
+                return (
+                  <button
+                    type="button"
+                    key={opt.value}
+                    onClick={() => {
+                      onChange(opt);
+                      setOpen(false);
+                    }}
+                    className={`flex w-full items-center gap-3 px-4 py-2.5 text-[13px] text-left transition ${
+                      isActive ? "bg-red-50 text-red-700" : "text-[#202124] hover:bg-[#f8fafc]"
+                    }`}
+                    style={NAV_FONT}
+                  >
+                    {opt.image ? (
+                      <img src={opt.image} alt="" className="h-6 w-6 rounded object-contain flex-shrink-0" />
+                    ) : (
+                      <span className="h-6 w-6 rounded bg-[#f1f3f4] flex-shrink-0" />
+                    )}
+                    <span className="flex-1 truncate">{opt.label}</span>
+                    {isActive && <Check size={14} className="text-red-600 flex-shrink-0" />}
+                  </button>
+                );
+              })
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 const covered = [
   "Inherent defects with parts we install",
@@ -40,11 +181,52 @@ export default function WarrantyPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const [brands, setBrands] = useState<BrandResult[]>([]);
+  const [models, setModels] = useState<ModelResult[]>([]);
+  const [brandsLoading, setBrandsLoading] = useState(true);
+  const [modelsLoading, setModelsLoading] = useState(false);
+  const [selectedBrandSlug, setSelectedBrandSlug] = useState("");
+  const [selectedModelSlug, setSelectedModelSlug] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    setBrandsLoading(true);
+    getPublicBrandsWithMeta()
+      .then((data) => { if (!cancelled) setBrands(data); })
+      .catch(() => { if (!cancelled) setBrands([]); })
+      .finally(() => { if (!cancelled) setBrandsLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    if (!selectedBrandSlug) { setModels([]); return; }
+    let cancelled = false;
+    setModelsLoading(true);
+    getPublicBrandModels(selectedBrandSlug, undefined, { limit: 200 })
+      .then((res) => { if (!cancelled) setModels(res.models); })
+      .catch(() => { if (!cancelled) setModels([]); })
+      .finally(() => { if (!cancelled) setModelsLoading(false); });
+    return () => { cancelled = true; };
+  }, [selectedBrandSlug]);
+
+  const brandOptions: Option[] = useMemo(
+    () => brands.map((b) => ({ value: b.slug, label: b.name, image: b.logoUrl || b.showcaseImageUrl })),
+    [brands],
+  );
+  const modelOptions: Option[] = useMemo(
+    () => models.map((m) => ({ value: m.slug, label: m.name, image: m.imageUrl })),
+    [models],
+  );
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!form.brand || !form.model) {
+      setError("Please select both a device brand and model.");
+      return;
+    }
     setLoading(true);
     setError("");
     try {
@@ -212,26 +394,39 @@ export default function WarrantyPage() {
                   </div>
 
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    {[
-                      { label: "Device Brand", name: "brand", placeholder: "Apple, Samsung, etc." },
-                      { label: "Device Model", name: "model", placeholder: "e.g. iPhone 15 Pro" },
-                    ].map((f) => (
-                      <div key={f.name} className="flex flex-col gap-1.5">
-                        <label className="text-[13px] font-medium text-[#202124]" style={NAV_FONT}>
-                          {f.label} <span className="text-red-600">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          name={f.name}
-                          required
-                          placeholder={f.placeholder}
-                          value={form[f.name as keyof typeof form]}
-                          onChange={handleChange}
-                          className="rounded-[14px] border border-[#e8eaed] bg-[#fafafa] px-4 py-3 text-[14px] text-[#202124] placeholder-[#adb5bd] outline-none focus:border-red-400 focus:ring-2 focus:ring-red-100 transition"
-                          style={NAV_FONT}
-                        />
-                      </div>
-                    ))}
+                    <SearchableDropdown
+                      label="Device Brand"
+                      placeholder={brandsLoading ? "Loading brands..." : "Select a brand"}
+                      required
+                      value={selectedBrandSlug}
+                      options={brandOptions}
+                      loading={brandsLoading}
+                      onChange={(opt) => {
+                        setSelectedBrandSlug(opt.value);
+                        setSelectedModelSlug("");
+                        setForm((prev) => ({ ...prev, brand: opt.label, model: "" }));
+                      }}
+                    />
+                    <SearchableDropdown
+                      label="Device Model"
+                      placeholder={
+                        !selectedBrandSlug
+                          ? "Select a brand first"
+                          : modelsLoading
+                          ? "Loading models..."
+                          : "Select a model"
+                      }
+                      required
+                      disabled={!selectedBrandSlug}
+                      value={selectedModelSlug}
+                      options={modelOptions}
+                      loading={modelsLoading}
+                      emptyText={selectedBrandSlug ? "No models found" : "Select a brand first"}
+                      onChange={(opt) => {
+                        setSelectedModelSlug(opt.value);
+                        setForm((prev) => ({ ...prev, model: opt.label }));
+                      }}
+                    />
                   </div>
 
                   <div className="flex flex-col gap-1.5">
