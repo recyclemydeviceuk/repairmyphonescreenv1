@@ -41,10 +41,11 @@ type RepairCard = {
 type CategoryIcon = "device" | "screen" | "back" | "battery" | "camera" | "wrench" | "watch";
 
 type RepairCategory = {
-  key:   string;
-  label: string;
-  icon:  CategoryIcon;
-  items: RepairCard[];
+  key:      string;
+  label:    string;
+  icon:     CategoryIcon;
+  imageUrl?: string;
+  items:    RepairCard[];
 };
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -108,6 +109,8 @@ function buildCategories(rules: PricingRuleResult[], modelName: string): RepairC
       icon:        iconForItem,
       imageUrl:    rule.repairTypeImageUrl || undefined,
     });
+
+    if (!cat.imageUrl && rule.repairTypeImageUrl) cat.imageUrl = rule.repairTypeImageUrl;
   }
 
   return CATEGORY_ORDER.filter(k => map.has(k)).map(k => map.get(k)!);
@@ -328,10 +331,18 @@ export default function BookRepairRepairPage() {
                           : "border-[#d2e3fc] bg-white text-[#202124] hover:border-red-300 hover:bg-[#fff8f8]"
                       }`}
                     >
-                      <div className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl transition-all duration-200 ${
+                      <div className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl overflow-hidden transition-all duration-200 ${
                         isActive ? "bg-white text-red-600 shadow-sm" : "bg-[#f5f7fb] text-[#344054] group-hover:bg-white"
                       }`}>
-                        <Icon size={20} className={isActive ? "text-red-600" : "text-[#344054]"} />
+                        {cat.imageUrl ? (
+                          <img
+                            src={cat.imageUrl}
+                            alt={cat.label}
+                            className="h-9 w-9 object-contain"
+                          />
+                        ) : (
+                          <Icon size={20} className={isActive ? "text-red-600" : "text-[#344054]"} />
+                        )}
                       </div>
                       <div className="min-w-0 flex-1">
                         <span className={`block text-[14px] font-semibold leading-5 ${isActive ? "text-red-600" : "text-[#202124]"}`}>
