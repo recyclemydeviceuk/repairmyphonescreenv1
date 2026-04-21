@@ -114,109 +114,15 @@ export default function Header() {
             </nav>
           </div>
 
-          {/* RIGHT: Search + Cart + Mobile toggle */}
-          <div className="flex items-center gap-1 flex-shrink-0 relative" ref={searchRef}>
-            {searchOpen ? (
-              <div className="flex items-center">
-                <div className="flex items-center gap-1 border border-gray-300 rounded-full px-3 py-1.5 mr-1 bg-white shadow-sm">
-                  <Search size={15} className="text-gray-500 flex-shrink-0" />
-                  <input
-                    autoFocus
-                    type="text"
-                    placeholder="Search devices…"
-                    style={NAV_FONT}
-                    className="outline-none text-[#202124] w-32 sm:w-48 md:w-64 bg-transparent"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                  {searchQuery && (
-                    <button
-                      onClick={() => setSearchQuery("")}
-                      className="text-gray-300 hover:text-gray-500 transition-colors"
-                    >
-                      <X size={13} />
-                    </button>
-                  )}
-                </div>
-                
-                <button
-                  onClick={() => {
-                    setSearchOpen(false);
-                    setSearchQuery("");
-                    setSearchResults([]);
-                  }}
-                  className="p-2 text-gray-500 hover:text-red-600 transition-colors"
-                  aria-label="Close search"
-                >
-                  <X size={20} />
-                </button>
-
-                {/* Search Results Dropdown */}
-                {(searchResults.length > 0 || (searchQuery.length >= 2 && searchResults.length === 0)) && (
-                  <div className="absolute top-full right-0 mt-3 w-72 sm:w-80 md:w-[450px] bg-white border border-gray-100 rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] overflow-hidden z-[60] transform origin-top-right transition-all duration-200">
-                    <div className="py-2">
-                      {searchResults.length > 0 ? (
-                        <>
-                          <div className="px-5 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-50 mb-1">
-                            Found {searchResults.length} {searchResults.length === 1 ? 'device' : 'devices'}
-                          </div>
-                          <div className="max-h-[60vh] overflow-y-auto">
-                            {searchResults.map((result, idx) => (
-                              <button
-                                key={`${result.name}-${idx}`}
-                                onClick={() => handleResultClick(`/book-repair/${result.tab}/${slugifySegment(result.brandName)}/models/${result.slug}`)}
-                                className="w-full flex items-center gap-4 px-5 py-4 hover:bg-gray-50 text-left transition-colors group border-b border-gray-50 last:border-0"
-                              >
-                                <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gray-50 group-hover:bg-white flex items-center justify-center transition-colors overflow-hidden border border-transparent group-hover:border-gray-100 shadow-sm">
-                                  {result.image ? (
-                                    <img 
-                                      src={result.image} 
-                                      alt={result.name} 
-                                      className="w-full h-full object-contain p-1 group-hover:scale-110 transition-transform duration-300" 
-                                    />
-                                  ) : (
-                                    getIcon(result.tab)
-                                  )}
-                                </div>
-                                <div className="flex-grow min-w-0">
-                                  <div className="text-[14px] font-semibold text-[#202124] group-hover:text-red-600 transition-colors truncate">
-                                    {result.name}
-                                  </div>
-                                  <div className="text-[12px] text-gray-500 flex items-center gap-1.5 mt-0.5">
-                                    <span className="font-medium text-gray-400">{result.brandName}</span>
-                                    <span className="w-1 h-1 rounded-full bg-gray-300"></span>
-                                    <span className="capitalize">{result.tab}</span>
-                                  </div>
-                                </div>
-                                <div className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <Search size={14} className="text-red-600" />
-                                </div>
-                              </button>
-                            ))}
-                          </div>
-                        </>
-                      ) : (
-                        <div className="p-8 text-center">
-                          <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3">
-                            <Search size={20} className="text-gray-300" />
-                          </div>
-                          <p className="text-sm font-medium text-gray-900">No results found</p>
-                          <p className="text-xs text-gray-500 mt-1">We couldn't find any device matching "{searchQuery}"</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <button
-                onClick={() => setSearchOpen(true)}
-                className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-                aria-label="Search"
-              >
-                <Search size={20} className="text-[#202124]" />
-              </button>
-            )}
+          {/* RIGHT: Search trigger + Cart + Mobile toggle */}
+          <div className="flex items-center gap-1 flex-shrink-0">
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+              aria-label="Search"
+            >
+              <Search size={20} className="text-[#202124]" />
+            </button>
 
             <Link
               to="/repair-cart"
@@ -245,6 +151,108 @@ export default function Header() {
             </button>
           </div>
         </div>
+
+        {/* Full-width search bar — slides in below main header row */}
+        {searchOpen && (
+          <div
+            ref={searchRef}
+            className="border-t border-[#e8eaed] bg-white"
+          >
+            <div className="max-w-7xl mx-auto w-full px-6 py-3 relative">
+              <div className="flex items-center gap-2">
+                <div className="flex-1 flex items-center gap-2 border border-gray-300 rounded-full px-4 py-2.5 bg-white shadow-sm">
+                  <Search size={16} className="text-gray-500 flex-shrink-0" />
+                  <input
+                    autoFocus
+                    type="text"
+                    placeholder="Search devices…"
+                    style={NAV_FONT}
+                    className="outline-none text-[#202124] flex-1 bg-transparent"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery("")}
+                      className="text-gray-300 hover:text-gray-500 transition-colors"
+                      aria-label="Clear search"
+                    >
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
+                <button
+                  onClick={() => {
+                    setSearchOpen(false);
+                    setSearchQuery("");
+                    setSearchResults([]);
+                  }}
+                  className="flex-shrink-0 p-2 text-gray-500 hover:text-red-600 transition-colors"
+                  aria-label="Close search"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              {/* Search Results Dropdown */}
+              {(searchResults.length > 0 || (searchQuery.length >= 2 && !searchLoading)) && (
+                <div className="absolute left-6 right-6 top-full mt-2 bg-white border border-gray-100 rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] overflow-hidden z-[60]">
+                  <div className="py-2">
+                    {searchResults.length > 0 ? (
+                      <>
+                        <div className="px-5 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-50 mb-1">
+                          Found {searchResults.length} {searchResults.length === 1 ? 'device' : 'devices'}
+                        </div>
+                        <div className="max-h-[60vh] overflow-y-auto">
+                          {searchResults.map((result, idx) => (
+                            <button
+                              key={`${result.name}-${idx}`}
+                              onClick={() => handleResultClick(`/book-repair/${result.tab}/${slugifySegment(result.brandName)}/models/${result.slug}`)}
+                              className="w-full flex items-center gap-4 px-5 py-4 hover:bg-gray-50 text-left transition-colors group border-b border-gray-50 last:border-0"
+                            >
+                              <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gray-50 group-hover:bg-white flex items-center justify-center transition-colors overflow-hidden border border-transparent group-hover:border-gray-100 shadow-sm">
+                                {result.image ? (
+                                  <img
+                                    src={result.image}
+                                    alt={result.name}
+                                    className="w-full h-full object-contain p-1 group-hover:scale-110 transition-transform duration-300"
+                                  />
+                                ) : (
+                                  getIcon(result.tab)
+                                )}
+                              </div>
+                              <div className="flex-grow min-w-0">
+                                <div className="text-[14px] font-semibold text-[#202124] group-hover:text-red-600 transition-colors truncate">
+                                  {result.name}
+                                </div>
+                                <div className="text-[12px] text-gray-500 flex items-center gap-1.5 mt-0.5">
+                                  <span className="font-medium text-gray-400">{result.brandName}</span>
+                                  <span className="w-1 h-1 rounded-full bg-gray-300"></span>
+                                  <span className="capitalize">{result.tab}</span>
+                                </div>
+                              </div>
+                              <div className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Search size={14} className="text-red-600" />
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    ) : (
+                      <div className="p-8 text-center">
+                        <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                          <Search size={20} className="text-gray-300" />
+                        </div>
+                        <p className="text-sm font-medium text-gray-900">No results found</p>
+                        <p className="text-xs text-gray-500 mt-1">We couldn't find any device matching "{searchQuery}"</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Mobile nav dropdown */}
         {mobileOpen && (

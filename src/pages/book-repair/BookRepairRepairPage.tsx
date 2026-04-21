@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Camera,
   CheckCircle2,
@@ -131,6 +131,17 @@ export default function BookRepairRepairPage() {
   const [brand, setBrand]       = useState<BrandResult | null>(null);
   const [model, setModel]       = useState<ModelResult | null>(null);
   const [toast, setToast]       = useState<{ title: string; variant: "added" | "exists" } | null>(null);
+  const repairsSectionRef = useRef<HTMLDivElement>(null);
+
+  const handleCategoryClick = (key: string) => {
+    setSelectedCategoryKey(key);
+    // Auto-scroll to repair cards on mobile so user sees the details immediately
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      window.setTimeout(() => {
+        repairsSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 60);
+    }
+  };
 
   // ── Fetch brand info + pricing from backend ───────────────────────────────
   useEffect(() => {
@@ -324,7 +335,7 @@ export default function BookRepairRepairPage() {
                     <button
                       key={cat.key}
                       type="button"
-                      onClick={() => setSelectedCategoryKey(cat.key)}
+                      onClick={() => handleCategoryClick(cat.key)}
                       className={`group relative flex flex-col items-center justify-center gap-2 rounded-[20px] border px-3 py-4 text-center transition-all duration-200 sm:flex-row sm:justify-start sm:text-left sm:gap-3 sm:px-4 sm:min-h-[68px] sm:min-w-[180px] ${
                         isActive
                           ? "border-red-500 bg-red-50/80 text-red-600 shadow-[0_10px_30px_rgba(220,38,38,0.12)]"
@@ -359,7 +370,7 @@ export default function BookRepairRepairPage() {
 
               {/* Repair cards */}
               {selectedCategory && (
-                <div className="overflow-hidden rounded-[30px] border border-red-500 bg-white">
+                <div ref={repairsSectionRef} className="overflow-hidden rounded-[30px] border border-red-500 bg-white scroll-mt-24">
                   {selectedCategory.items.map((item, index) => {
                     const displayTitle = cleanTitle(item.title, modelName);
                     return (
