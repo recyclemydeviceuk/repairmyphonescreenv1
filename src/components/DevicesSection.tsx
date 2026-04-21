@@ -122,10 +122,10 @@ export default function DevicesSection() {
                   <Link
                     key={device._id}
                     to={`/book-repair/${device.slug}`}
-                    className="group flex flex-col items-center flex-shrink-0 snap-start basis-full sm:basis-[calc((100%-2rem)/2)] lg:basis-[calc((100%-4rem)/3)] w-full sm:w-[calc((100%-2rem)/2)] lg:w-[calc((100%-4rem)/3)]"
+                    className="group flex flex-col items-center flex-shrink-0 snap-start basis-[calc((100%-1.5rem)/2)] md:basis-[calc((100%-2rem)/2)] lg:basis-[calc((100%-4rem)/3)] w-[calc((100%-1.5rem)/2)] md:w-[calc((100%-2rem)/2)] lg:w-[calc((100%-4rem)/3)]"
                   >
                     {/* Card */}
-                    <div className="w-full bg-gradient-to-br from-[#f0f4ff] to-[#fff0f0] rounded-[32px] overflow-hidden flex items-center justify-center p-12 md:p-16 aspect-[4/3] transition-all duration-300 group-hover:shadow-2xl group-hover:-translate-y-1 border border-gray-100">
+                    <div className="w-full bg-gradient-to-br from-[#f0f4ff] to-[#fff0f0] rounded-[24px] md:rounded-[32px] overflow-hidden flex items-center justify-center p-6 md:p-16 aspect-[4/3] transition-all duration-300 group-hover:shadow-2xl group-hover:-translate-y-1 border border-gray-100">
                       {img ? (
                         <img
                           src={img}
@@ -142,13 +142,13 @@ export default function DevicesSection() {
 
                     {/* Label */}
                     <p
-                      className="mt-6 text-[22px] md:text-[24px] text-[#202124] font-bold group-hover:text-red-600 transition-colors text-center"
+                      className="mt-4 md:mt-6 text-[15px] md:text-[24px] text-[#202124] font-bold group-hover:text-red-600 transition-colors text-center"
                       style={NAV_FONT}
                     >
                       {label}
                     </p>
                     <p
-                      className="mt-1.5 text-[14px] text-[#5f6368] text-center"
+                      className="mt-1 md:mt-1.5 text-[12px] md:text-[14px] text-[#5f6368] text-center"
                       style={NAV_FONT}
                     >
                       {subLabel}
