@@ -59,7 +59,6 @@ const defaultSettings: SiteSettings = {
     maintenanceMode:    false,
     maintenanceMessage: '',
     collectionDelivery: true,
-    turnaroundTime:     '1-2 hours',
   },
 };
 
@@ -121,7 +120,6 @@ function App() {
               maintenanceMode:    o.maintenanceMode    ?? false,
               maintenanceMessage: o.maintenanceMessage ?? '',
               collectionDelivery: o.collectionDelivery ?? true,
-              turnaroundTime:     o.turnaroundTime     ?? '1-2 hours',
             },
           });
         }

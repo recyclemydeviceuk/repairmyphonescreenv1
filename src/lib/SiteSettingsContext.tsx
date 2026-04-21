@@ -14,7 +14,6 @@ export interface SiteOperationsSettings {
   maintenanceMode:     boolean;
   maintenanceMessage:  string;
   collectionDelivery:  boolean;
-  turnaroundTime:      string;
 }
 
 export interface SiteSettings {
@@ -36,7 +35,6 @@ const defaults: SiteSettings = {
     maintenanceMode:    false,
     maintenanceMessage: '',
     collectionDelivery: true,
-    turnaroundTime:     '1-2 hours',
   },
 };
 
