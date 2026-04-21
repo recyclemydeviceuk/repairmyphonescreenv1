@@ -301,7 +301,31 @@ export default function BookRepairRepairPage() {
         <div className="mx-auto max-w-5xl">
 
           {/* ── Model heading ──────────────────────────────────────────── */}
-          <div className="mb-10 text-center">
+          <div className="mb-10 flex flex-col items-center text-center gap-4">
+            {/* Trustpilot badge */}
+            <a
+              href="https://uk.trustpilot.com/review/repairmyphonescreen.co.uk"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 border border-gray-200 rounded-full px-4 py-1.5 hover:border-[#00b67a] transition-colors group"
+            >
+              <span className="flex items-center gap-0.5">
+                {[...Array(5)].map((_, i) => (
+                  <svg key={i} width="13" height="13" viewBox="0 0 24 24" fill="#00b67a">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                  </svg>
+                ))}
+              </span>
+              <span className="text-[12px] text-[#5f6368] group-hover:text-[#00b67a] transition-colors">
+                <strong className="text-[#202124]">4.9 / 5</strong> — Rated <strong className="text-[#202124]">Excellent</strong> on Trustpilot
+              </span>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                <polyline points="15 3 21 3 21 9" />
+                <line x1="10" y1="14" x2="21" y2="3" />
+              </svg>
+            </a>
+
             <p className="mx-auto max-w-2xl text-[20px] font-semibold leading-8 text-[#202124]">
               {modelName}
             </p>
