@@ -130,6 +130,42 @@ function App() {
       .finally(() => setSettingsReady(true));
   }, []);
 
+  useEffect(() => {
+    if (!settingsReady) return;
+    const { general } = siteSettings;
+
+    // og:site_name
+    const setMeta = (selector: string, content: string) => {
+      const el = document.head.querySelector<HTMLMetaElement>(selector);
+      if (el) el.content = content;
+    };
+    setMeta('meta[property="og:site_name"]', general.businessName);
+    if (general.tagline) {
+      setMeta('meta[name="description"]',       general.tagline);
+      setMeta('meta[property="og:description"]', general.tagline);
+      setMeta('meta[name="twitter:description"]', general.tagline);
+    }
+    setMeta('meta[property="og:image"]', general.logoUrl);
+    setMeta('meta[name="twitter:image"]', general.logoUrl);
+
+    // Patch LocalBusiness JSON-LD (first ld+json block in <head>)
+    const ldEl = document.head.querySelector<HTMLScriptElement>('script[type="application/ld+json"]');
+    if (ldEl) {
+      try {
+        const ld = JSON.parse(ldEl.textContent || '{}');
+        if (ld['@type'] === 'LocalBusiness') {
+          ld.name      = general.businessName;
+          ld.logo      = general.logoUrl;
+          ld.image     = general.logoUrl;
+          if (general.phone) ld.telephone = [general.phone, ...(general.whatsappNumber ? [`+${general.whatsappNumber.replace(/[\s+()-]/g, '')}`] : [])];
+          if (general.email) ld.email     = general.email;
+          if (general.address && ld.address) ld.address.streetAddress = general.address;
+          ldEl.textContent = JSON.stringify(ld);
+        }
+      } catch { /* leave schema untouched if malformed */ }
+    }
+  }, [settingsReady, siteSettings]);
+
   if (!settingsReady) return null;
 
   if (siteSettings.operations.maintenanceMode) {

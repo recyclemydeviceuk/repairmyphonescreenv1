@@ -101,13 +101,18 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-6 py-20">
 
         <div className="mb-16">
-          <Link to="/">
+          <Link to="/" className="inline-block">
             <img
               src={general.logoUrl}
               alt={general.businessName}
               className="h-20 w-auto object-contain"
             />
           </Link>
+          {general.tagline && (
+            <p className="mt-3 text-[13px] text-[#5f6368] max-w-md leading-relaxed" style={NAV_FONT}>
+              {general.tagline}
+            </p>
+          )}
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-14">
