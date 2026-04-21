@@ -119,36 +119,6 @@ export default function DevicesSection() {
         {/* Device cards carousel — 3 per slide on desktop, 2 on tablet, 1 on mobile */}
         {!loading && types.length > 0 && (
           <div className="relative">
-            {/* Prev button */}
-            <button
-              type="button"
-              onClick={() => scrollByPage(-1)}
-              disabled={!canScrollPrev}
-              aria-label="Previous devices"
-              className={`hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 z-10 w-12 h-12 rounded-full bg-white border border-gray-200 shadow-lg items-center justify-center transition-all duration-200 ${
-                canScrollPrev
-                  ? "opacity-100 hover:bg-red-600 hover:border-red-600 hover:text-white text-[#202124]"
-                  : "opacity-40 cursor-not-allowed text-[#9aa0a6]"
-              }`}
-            >
-              <ChevronLeft size={22} />
-            </button>
-
-            {/* Next button */}
-            <button
-              type="button"
-              onClick={() => scrollByPage(1)}
-              disabled={!canScrollNext}
-              aria-label="Next devices"
-              className={`hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-10 w-12 h-12 rounded-full bg-white border border-gray-200 shadow-lg items-center justify-center transition-all duration-200 ${
-                canScrollNext
-                  ? "opacity-100 hover:bg-red-600 hover:border-red-600 hover:text-white text-[#202124]"
-                  : "opacity-40 cursor-not-allowed text-[#9aa0a6]"
-              }`}
-            >
-              <ChevronRight size={22} />
-            </button>
-
             {/* Scroller */}
             <div
               ref={scrollerRef}
@@ -197,6 +167,36 @@ export default function DevicesSection() {
                   </Link>
                 );
               })}
+            </div>
+
+            {/* Nav arrows — bottom right */}
+            <div className="hidden md:flex items-center justify-end gap-3 mt-6">
+              <button
+                type="button"
+                onClick={() => scrollByPage(-1)}
+                disabled={!canScrollPrev}
+                aria-label="Previous devices"
+                className={`w-12 h-12 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center transition-all duration-200 ${
+                  canScrollPrev
+                    ? "opacity-100 hover:bg-red-600 hover:border-red-600 hover:text-white text-[#202124]"
+                    : "opacity-40 cursor-not-allowed text-[#9aa0a6]"
+                }`}
+              >
+                <ChevronLeft size={22} />
+              </button>
+              <button
+                type="button"
+                onClick={() => scrollByPage(1)}
+                disabled={!canScrollNext}
+                aria-label="Next devices"
+                className={`w-12 h-12 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center transition-all duration-200 ${
+                  canScrollNext
+                    ? "opacity-100 hover:bg-red-600 hover:border-red-600 hover:text-white text-[#202124]"
+                    : "opacity-40 cursor-not-allowed text-[#9aa0a6]"
+                }`}
+              >
+                <ChevronRight size={22} />
+              </button>
             </div>
           </div>
         )}
