@@ -111,8 +111,8 @@ export default function DevicesSection() {
             {/* Scroller */}
             <div
               ref={scrollerRef}
-              className="flex gap-6 md:gap-8 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-4 -mx-6 px-6 scrollbar-hide"
-              style={{ scrollbarWidth: "none" }}
+              className="flex flex-row flex-nowrap gap-6 md:gap-8 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-4 -mx-6 px-6 scrollbar-hide"
+              style={{ scrollbarWidth: "none", touchAction: "pan-x" }}
             >
               {types.map((device) => {
                 const img = device.imageUrl;
@@ -122,7 +122,7 @@ export default function DevicesSection() {
                   <Link
                     key={device._id}
                     to={`/book-repair/${device.slug}`}
-                    className="group flex flex-col items-center flex-shrink-0 snap-start w-full sm:w-[calc((100%-2rem)/2)] lg:w-[calc((100%-4rem)/3)]"
+                    className="group flex flex-col items-center flex-shrink-0 snap-start basis-full sm:basis-[calc((100%-2rem)/2)] lg:basis-[calc((100%-4rem)/3)] w-full sm:w-[calc((100%-2rem)/2)] lg:w-[calc((100%-4rem)/3)]"
                   >
                     {/* Card */}
                     <div className="w-full bg-gradient-to-br from-[#f0f4ff] to-[#fff0f0] rounded-[32px] overflow-hidden flex items-center justify-center p-12 md:p-16 aspect-[4/3] transition-all duration-300 group-hover:shadow-2xl group-hover:-translate-y-1 border border-gray-100">
@@ -158,8 +158,8 @@ export default function DevicesSection() {
               })}
             </div>
 
-            {/* Nav arrows — bottom right */}
-            <div className="hidden md:flex items-center justify-end gap-3 mt-6">
+            {/* Nav arrows — bottom right (visible on all sizes) */}
+            <div className="flex items-center justify-end gap-3 mt-6">
               <button
                 type="button"
                 onClick={() => scrollByPage(-1)}
