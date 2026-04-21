@@ -315,8 +315,8 @@ export default function BookRepairRepairPage() {
           {/* ── Category tabs + repair cards ───────────────────────────── */}
           {!loading && categories.length > 0 && (
             <>
-              {/* Category pills */}
-              <div className="mb-8 flex flex-wrap items-center justify-center gap-3">
+              {/* Category pills — 2-col grid on mobile, horizontal row on desktop */}
+              <div className="mb-8 grid grid-cols-2 gap-3 sm:flex sm:flex-wrap sm:items-center sm:justify-center">
                 {categories.map(cat => {
                   const Icon     = getTabIcon(cat.icon, tab);
                   const isActive = cat.key === selectedCategory?.key;
@@ -325,7 +325,7 @@ export default function BookRepairRepairPage() {
                       key={cat.key}
                       type="button"
                       onClick={() => setSelectedCategoryKey(cat.key)}
-                      className={`group relative flex min-h-[68px] min-w-[180px] items-center gap-3 rounded-[20px] border px-4 py-4 text-left transition-all duration-200 ${
+                      className={`group relative flex flex-col items-center justify-center gap-2 rounded-[20px] border px-3 py-4 text-center transition-all duration-200 sm:flex-row sm:justify-start sm:text-left sm:gap-3 sm:px-4 sm:min-h-[68px] sm:min-w-[180px] ${
                         isActive
                           ? "border-red-500 bg-red-50/80 text-red-600 shadow-[0_10px_30px_rgba(220,38,38,0.12)]"
                           : "border-[#d2e3fc] bg-white text-[#202124] hover:border-red-300 hover:bg-[#fff8f8]"
@@ -344,8 +344,8 @@ export default function BookRepairRepairPage() {
                           <Icon size={20} className={isActive ? "text-red-600" : "text-[#344054]"} />
                         )}
                       </div>
-                      <div className="min-w-0 flex-1">
-                        <span className={`block text-[14px] font-semibold leading-5 ${isActive ? "text-red-600" : "text-[#202124]"}`}>
+                      <div className="min-w-0 sm:flex-1">
+                        <span className={`block text-[13px] sm:text-[14px] font-semibold leading-5 ${isActive ? "text-red-600" : "text-[#202124]"}`}>
                           {cat.label}
                         </span>
                       </div>
