@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import {
-  BatteryCharging,
   Camera,
   CheckCircle2,
+  Layers,
   Loader2,
-  Monitor,
+  Power,
   Smartphone,
   Tablet,
   Watch,
@@ -38,7 +38,7 @@ type RepairCard = {
   imageUrl?:    string;
 };
 
-type CategoryIcon = "device" | "screen" | "battery" | "camera" | "wrench" | "watch";
+type CategoryIcon = "device" | "screen" | "back" | "battery" | "camera" | "wrench" | "watch";
 
 type RepairCategory = {
   key:   string;
@@ -51,7 +51,7 @@ type RepairCategory = {
 
 const CATEGORY_UI: Record<string, { key: string; label: string; icon: CategoryIcon }> = {
   screen:        { key: "screen",  label: "Screen",             icon: "screen"  },
-  back_glass:    { key: "back",    label: "Back cover",         icon: "device"  },
+  back_glass:    { key: "back",    label: "Back cover",         icon: "back"    },
   battery:       { key: "battery", label: "Battery & charging", icon: "battery" },
   charging_port: { key: "battery", label: "Battery & charging", icon: "battery" },
   camera:        { key: "camera",  label: "Camera",             icon: "camera"  },
@@ -62,8 +62,9 @@ const CATEGORY_UI: Record<string, { key: string; label: string; icon: CategoryIc
 const CATEGORY_ORDER = ["screen", "back", "battery", "camera", "other"];
 
 function getTabIcon(icon: CategoryIcon, tab: string) {
-  if (icon === "screen")   return Monitor;
-  if (icon === "battery")  return BatteryCharging;
+  if (icon === "screen")   return Smartphone;
+  if (icon === "back")     return Layers;
+  if (icon === "battery")  return Power;
   if (icon === "camera")   return Camera;
   if (icon === "wrench")   return Wrench;
   if (icon === "watch")    return Watch;
