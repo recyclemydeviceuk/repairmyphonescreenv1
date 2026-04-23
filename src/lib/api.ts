@@ -193,7 +193,6 @@ export interface PricingRuleResult {
   repairTypeImageUrl?:  string;
   category:             string;
   price:                number;
-  originalPrice?:       number;
   description?:         string;
   warranty?:            string;
   turnaround?:          string;
@@ -234,14 +233,15 @@ export interface ModelBundleResult {
 }
 
 export async function getPublicModelBundle(modelSlug: string): Promise<ModelBundleResult | null> {
-  return cachedFetch(`model-bundle:${modelSlug}`, 10 * 60 * 1000, async () => {
-    try {
-      const res = await api.get<{ data: ModelBundleResult }>(`/public/models/${modelSlug}/bundle`);
-      return res.data.data ?? null;
-    } catch {
-      return null;
-    }
-  });
+  // No client-side cache — this payload includes live repair prices, and we
+  // want admin price edits to be visible on the next page load without
+  // waiting for a TTL to expire.
+  try {
+    const res = await api.get<{ data: ModelBundleResult }>(`/public/models/${modelSlug}/bundle`);
+    return res.data.data ?? null;
+  } catch {
+    return null;
+  }
 }
 
 // ── Public Catalog: Addons ────────────────────────────────────

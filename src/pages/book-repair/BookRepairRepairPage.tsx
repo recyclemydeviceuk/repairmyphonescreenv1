@@ -29,7 +29,6 @@ type RepairCard = {
   title:        string;
   price:        string;
   unitPrice:    number;
-  originalPrice?: number;
   description:  string;
   warranty:     string;
   turnaround:   string;
@@ -100,7 +99,6 @@ function buildCategories(rules: PricingRuleResult[], modelName: string): RepairC
       title:       rule.repairTypeName,
       price:       `£${rule.price}`,
       unitPrice:   rule.price,
-      originalPrice: rule.originalPrice,
       // Use backend values — these are stored per model+repair in the DB
       description: rule.description ?? `Professional ${rule.repairTypeName.toLowerCase()} service for your ${modelName}.`,
       warranty:    rule.warranty    ?? "12 Months",
@@ -413,11 +411,6 @@ export default function BookRepairRepairPage() {
                               <span className="text-[30px] font-bold leading-none text-[#111827]">
                                 {item.price}
                               </span>
-                              {item.originalPrice && item.originalPrice > item.unitPrice && (
-                                <span className="text-[18px] font-medium text-[#9aa0a6] line-through">
-                                  £{item.originalPrice}
-                                </span>
-                              )}
                             </div>
                             <button
                               type="button"
