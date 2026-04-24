@@ -73,8 +73,6 @@ export interface CheckoutPayload {
   model: string;
   repairType: string;
   postageType: string;
-  collectionAddress?: string;
-  collectionPostcode?: string;
   items: {
     repairTypeId: string;
     repairTypeName: string;

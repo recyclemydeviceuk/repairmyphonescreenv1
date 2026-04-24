@@ -11,7 +11,6 @@ import {
 } from "../lib/repairCart";
 import { createCheckout, type CheckoutPayload } from "../lib/api";
 import { useState, type FormEvent } from "react";
-import { useSiteSettings } from "../lib/SiteSettingsContext";
 
 type CheckoutErrors = Partial<Record<keyof RepairCheckoutDetails, string>>;
 
@@ -36,15 +35,15 @@ const PackageIcon = ({ active }: { active: boolean }) => (
   </svg>
 );
 
-const CollectionIcon = ({ active }: { active: boolean }) => (
+const SendYourOwnIcon = ({ active }: { active: boolean }) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round"
     className={`h-7 w-7 transition-colors duration-200 ${active ? "stroke-red-600" : "stroke-[#6b7280]"}`}>
-    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-    <polyline points="9 22 9 12 15 12 15 22" />
+    <line x1="22" y1="2" x2="11" y2="13" />
+    <polygon points="22 2 15 22 11 13 2 9 22 2" />
   </svg>
 );
 
-const ALL_POSTAGE_OPTIONS: { value: PostageType; title: string; description: string; flag?: "collectionDelivery"; restriction?: string }[] = [
+const POSTAGE_OPTIONS: { value: PostageType; title: string; description: string }[] = [
   {
     value: "print-label",
     title: "Print Our Label",
@@ -56,11 +55,9 @@ const ALL_POSTAGE_OPTIONS: { value: PostageType; title: string; description: str
     description: "We'll post you a free prepaid packaging kit",
   },
   {
-    value: "collection",
-    title: "Collection & Delivery",
-    description: "We'll collect your device and deliver it back once repaired",
-    flag: "collectionDelivery",
-    restriction: "Preston area only",
+    value: "send-your-own",
+    title: "Send Your Own",
+    description: "Post your device to us using your own courier and packaging",
   },
 ];
 
@@ -85,13 +82,8 @@ const networkOptions = ["EE", "O2", "Vodafone", "Three", "Tesco Mobile", "giffga
 export default function RepairCheckoutPage() {
   const navigate = useNavigate();
   const { itemCount, items, subtotal } = useRepairCart();
-  const { operations: { collectionDelivery } } = useSiteSettings();
 
-  // Build the available postage options based on admin settings
-  const postageOptions = ALL_POSTAGE_OPTIONS.filter(opt => {
-    if (opt.flag === "collectionDelivery") return collectionDelivery;
-    return true;
-  });
+  const postageOptions = POSTAGE_OPTIONS;
   const existingSession = readRepairCheckoutSession();
   const [formData, setFormData] = useState<RepairCheckoutDetails>(defaultCheckoutDetails);
   const [errors, setErrors] = useState<CheckoutErrors>({});
@@ -156,16 +148,6 @@ export default function RepairCheckoutPage() {
       nextErrors.postageType = "Please select a postage option.";
     }
 
-    // Collection & Delivery is Preston-area only — enforce PR postcode
-    if (formData.postageType === "collection" && formData.postcode.trim()) {
-      const pc = formData.postcode.trim().toUpperCase().replace(/\s+/g, "");
-      const isPreston = /^PR([1-9]|25|26)[A-Z0-9]+$/.test(pc);
-      if (!isPreston) {
-        nextErrors.postcode =
-          "Collection & Delivery is only available for Preston area (PR) postcodes. Please choose another postage option or use a PR postcode.";
-      }
-    }
-
     if (!formData.termsAccepted) {
       nextErrors.termsAccepted = "You must agree to the Terms & Conditions.";
     }
@@ -212,12 +194,6 @@ export default function RepairCheckoutPage() {
         model: primaryRepair?.model ?? "",
         repairType: primaryRepair?.repairName ?? "",
         postageType: formData.postageType,
-        ...(formData.postageType === "collection"
-          ? {
-              collectionAddress: [formData.addressLine1, formData.city].filter(Boolean).join(", "),
-              collectionPostcode: formData.postcode,
-            }
-          : {}),
         items: repairItems.map((item) => ({
           repairTypeId: item.id,
           repairTypeName: item.repairName,
@@ -439,8 +415,8 @@ export default function RepairCheckoutPage() {
 
               <div className="mt-8">
                 <h3 className="text-[16px] font-semibold text-[#202124]">How would you like to send your device?</h3>
-                <p className="mt-1 text-[13px] text-[#5f6368]">Choose your preferred postage option — both are completely free.</p>
-                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <p className="mt-1 text-[13px] text-[#5f6368]">Choose your preferred postage option — the first two are completely free.</p>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {postageOptions.map((option) => {
                     const isSelected = formData.postageType === option.value;
                     return (
@@ -458,9 +434,9 @@ export default function RepairCheckoutPage() {
                       >
                         <div className="flex items-center justify-between">
                           <div className={`flex h-11 w-11 items-center justify-center rounded-[14px] transition-colors duration-200 ${isSelected ? "bg-red-100" : "bg-[#f3f4f6]"}`}>
-                            {option.value === "print-label" && <PrinterIcon active={isSelected} />}
-                            {option.value === "send-pack"   && <PackageIcon active={isSelected} />}
-                            {option.value === "collection"  && <CollectionIcon active={isSelected} />}
+                            {option.value === "print-label"   && <PrinterIcon active={isSelected} />}
+                            {option.value === "send-pack"     && <PackageIcon active={isSelected} />}
+                            {option.value === "send-your-own" && <SendYourOwnIcon active={isSelected} />}
                           </div>
                           <div
                             className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border-2 transition-all duration-200 ${
@@ -475,17 +451,6 @@ export default function RepairCheckoutPage() {
                             {option.title}
                           </p>
                           <p className="mt-0.5 text-[12px] leading-[1.5] text-[#5f6368]">{option.description}</p>
-                          {option.restriction && (
-                            <div className="mt-2.5 flex items-center gap-1.5 rounded-full bg-red-100 px-2.5 py-1 w-fit border border-red-200">
-                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3 stroke-red-700">
-                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                                <circle cx="12" cy="10" r="3" />
-                              </svg>
-                              <span className="text-[11px] font-bold text-red-700 tracking-wide">
-                                {option.restriction}
-                              </span>
-                            </div>
-                          )}
                         </div>
                       </button>
                     );

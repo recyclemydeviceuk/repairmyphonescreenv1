@@ -13,7 +13,6 @@ export interface SiteGeneralSettings {
 export interface SiteOperationsSettings {
   maintenanceMode:     boolean;
   maintenanceMessage:  string;
-  collectionDelivery:  boolean;
 }
 
 export interface SiteSettings {
@@ -34,7 +33,6 @@ const defaults: SiteSettings = {
   operations: {
     maintenanceMode:    false,
     maintenanceMessage: '',
-    collectionDelivery: true,
   },
 };
 

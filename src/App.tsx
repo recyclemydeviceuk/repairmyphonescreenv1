@@ -58,7 +58,6 @@ const defaultSettings: SiteSettings = {
   operations: {
     maintenanceMode:    false,
     maintenanceMessage: '',
-    collectionDelivery: true,
   },
 };
 
@@ -119,7 +118,6 @@ function App() {
             operations: {
               maintenanceMode:    o.maintenanceMode    ?? false,
               maintenanceMessage: o.maintenanceMessage ?? '',
-              collectionDelivery: o.collectionDelivery ?? true,
             },
           });
         }

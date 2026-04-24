@@ -37,7 +37,7 @@ export type AddRepairCartResult = {
   status: "added" | "exists";
 };
 
-export type PostageType = "print-label" | "send-pack" | "collection";
+export type PostageType = "print-label" | "send-pack" | "send-your-own";
 
 export type RepairCheckoutDetails = {
   additionalInfo: string;
