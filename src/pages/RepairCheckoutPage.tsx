@@ -416,7 +416,7 @@ export default function RepairCheckoutPage() {
               <div className="mt-8">
                 <h3 className="text-[16px] font-semibold text-[#202124]">How would you like to send your device?</h3>
                 <p className="mt-1 text-[13px] text-[#5f6368]">Choose your preferred postage option — the first two are completely free.</p>
-                <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="mt-4 grid gap-3 grid-cols-1">
                   {postageOptions.map((option) => {
                     const isSelected = formData.postageType === option.value;
                     return (
@@ -424,7 +424,7 @@ export default function RepairCheckoutPage() {
                         key={option.value}
                         type="button"
                         onClick={() => updateField("postageType", option.value)}
-                        className={`flex flex-col gap-3 rounded-[20px] border-2 p-5 text-left transition-all duration-200 ${
+                        className={`flex items-center gap-4 rounded-[20px] border-2 p-5 text-left transition-all duration-200 ${
                           isSelected
                             ? "border-red-500 bg-red-50 shadow-[0_4px_16px_rgba(220,38,38,0.12)]"
                             : errors.postageType
@@ -432,25 +432,23 @@ export default function RepairCheckoutPage() {
                               : "border-[#e5e7eb] bg-white hover:border-red-200 hover:bg-[#fff7f7]"
                         }`}
                       >
-                        <div className="flex items-center justify-between">
-                          <div className={`flex h-11 w-11 items-center justify-center rounded-[14px] transition-colors duration-200 ${isSelected ? "bg-red-100" : "bg-[#f3f4f6]"}`}>
-                            {option.value === "print-label"   && <PrinterIcon active={isSelected} />}
-                            {option.value === "send-pack"     && <PackageIcon active={isSelected} />}
-                            {option.value === "send-your-own" && <SendYourOwnIcon active={isSelected} />}
-                          </div>
-                          <div
-                            className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border-2 transition-all duration-200 ${
-                              isSelected ? "border-red-600 bg-red-600" : "border-[#d1d5db] bg-white"
-                            }`}
-                          >
-                            {isSelected && <span className="h-2 w-2 rounded-full bg-white" />}
-                          </div>
+                        <div className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-[14px] transition-colors duration-200 ${isSelected ? "bg-red-100" : "bg-[#f3f4f6]"}`}>
+                          {option.value === "print-label"   && <PrinterIcon active={isSelected} />}
+                          {option.value === "send-pack"     && <PackageIcon active={isSelected} />}
+                          {option.value === "send-your-own" && <SendYourOwnIcon active={isSelected} />}
                         </div>
-                        <div>
+                        <div className="min-w-0 flex-1">
                           <p className={`text-[14px] font-semibold ${isSelected ? "text-red-700" : "text-[#202124]"}`}>
                             {option.title}
                           </p>
                           <p className="mt-0.5 text-[12px] leading-[1.5] text-[#5f6368]">{option.description}</p>
+                        </div>
+                        <div
+                          className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border-2 transition-all duration-200 ${
+                            isSelected ? "border-red-600 bg-red-600" : "border-[#d1d5db] bg-white"
+                          }`}
+                        >
+                          {isSelected && <span className="h-2 w-2 rounded-full bg-white" />}
                         </div>
                       </button>
                     );
