@@ -43,7 +43,13 @@ const SendYourOwnIcon = ({ active }: { active: boolean }) => (
   </svg>
 );
 
-const POSTAGE_OPTIONS: { value: PostageType; title: string; description: string }[] = [
+const POSTAGE_OPTIONS: { value: PostageType; title: string; description: string; recommended?: boolean }[] = [
+  {
+    value: "send-your-own",
+    title: "Send Your Own",
+    description: "Post your device to us using your own courier and packaging",
+    recommended: true,
+  },
   {
     value: "print-label",
     title: "Print Our Label",
@@ -53,11 +59,6 @@ const POSTAGE_OPTIONS: { value: PostageType; title: string; description: string 
     value: "send-pack",
     title: "Send a Pack From Us",
     description: "We'll post you a free prepaid packaging kit",
-  },
-  {
-    value: "send-your-own",
-    title: "Send Your Own",
-    description: "Post your device to us using your own courier and packaging",
   },
 ];
 
@@ -424,14 +425,24 @@ export default function RepairCheckoutPage() {
                         key={option.value}
                         type="button"
                         onClick={() => updateField("postageType", option.value)}
-                        className={`flex items-center gap-4 rounded-[20px] border-2 p-5 text-left transition-all duration-200 ${
+                        className={`relative flex items-center gap-4 rounded-[20px] border-2 p-5 text-left transition-all duration-200 ${
                           isSelected
                             ? "border-red-500 bg-red-50 shadow-[0_4px_16px_rgba(220,38,38,0.12)]"
-                            : errors.postageType
-                              ? "border-red-200 bg-white hover:border-red-300"
-                              : "border-[#e5e7eb] bg-white hover:border-red-200 hover:bg-[#fff7f7]"
+                            : option.recommended
+                              ? "border-red-300 bg-white hover:border-red-400 hover:bg-[#fff7f7]"
+                              : errors.postageType
+                                ? "border-red-200 bg-white hover:border-red-300"
+                                : "border-[#e5e7eb] bg-white hover:border-red-200 hover:bg-[#fff7f7]"
                         }`}
                       >
+                        {option.recommended && (
+                          <span className="absolute -top-2.5 left-5 inline-flex items-center gap-1 rounded-full bg-red-600 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white shadow-[0_2px_8px_rgba(220,38,38,0.3)]">
+                            <svg viewBox="0 0 24 24" fill="currentColor" className="h-2.5 w-2.5">
+                              <path d="M12 .587l3.668 7.568L24 9.75l-6 5.847L19.336 24 12 19.897 4.664 24 6 15.597 0 9.75l8.332-1.595z"/>
+                            </svg>
+                            Recommended
+                          </span>
+                        )}
                         <div className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-[14px] transition-colors duration-200 ${isSelected ? "bg-red-100" : "bg-[#f3f4f6]"}`}>
                           {option.value === "print-label"   && <PrinterIcon active={isSelected} />}
                           {option.value === "send-pack"     && <PackageIcon active={isSelected} />}

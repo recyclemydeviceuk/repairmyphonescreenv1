@@ -24,6 +24,8 @@ import {
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
+type ScreenKind = "oled" | "lcd" | null;
+
 type RepairCard = {
   _id:          string;
   title:        string;
@@ -34,6 +36,8 @@ type RepairCard = {
   turnaround:   string;
   icon:         CategoryIcon;
   imageUrl?:    string;
+  screenKind:   ScreenKind;
+  recommended:  boolean;
 };
 
 type CategoryIcon = "device" | "screen" | "back" | "battery" | "camera" | "wrench" | "watch";
@@ -77,6 +81,15 @@ function cleanTitle(repairName: string, modelName: string) {
   return repairName.replace(modelName, "").replace(/\s{2,}/g, " ").trim() || repairName;
 }
 
+/** Detect OLED / LCD from a repair name. Used to badge screen repair cards. */
+function detectScreenKind(name: string, category: string): ScreenKind {
+  if (category !== "screen") return null;
+  const upper = name.toUpperCase();
+  if (/\bOLED\b/.test(upper) || /\bAMOLED\b/.test(upper)) return "oled";
+  if (/\bLCD\b/.test(upper) || /\bIPS\b/.test(upper))     return "lcd";
+  return null;
+}
+
 // ── Build category list from backend pricing rules ───────────────────────────
 
 function buildCategories(rules: PricingRuleResult[], modelName: string): RepairCategory[] {
@@ -94,6 +107,8 @@ function buildCategories(rules: PricingRuleResult[], modelName: string): RepairC
       rule.category === "battery" || rule.category === "charging_port" ? "battery" :
       rule.category === "camera"   ? "camera"  : "wrench";
 
+    const screenKind = detectScreenKind(rule.repairTypeName, rule.category);
+
     cat.items.push({
       _id:         rule._id,
       title:       rule.repairTypeName,
@@ -105,9 +120,21 @@ function buildCategories(rules: PricingRuleResult[], modelName: string): RepairC
       turnaround:  rule.turnaround  ?? "Up to 60 minutes",
       icon:        iconForItem,
       imageUrl:    rule.repairTypeImageUrl || undefined,
+      screenKind,
+      recommended: screenKind === "oled",
     });
 
     if (!cat.imageUrl && rule.repairTypeImageUrl) cat.imageUrl = rule.repairTypeImageUrl;
+  }
+
+  // Sort items inside each category — recommended ones first
+  for (const cat of map.values()) {
+    cat.items.sort((a, b) => {
+      if (a.recommended !== b.recommended) return a.recommended ? -1 : 1;
+      // Then OLED before LCD before others
+      const rank = (k: ScreenKind) => (k === "oled" ? 0 : k === "lcd" ? 1 : 2);
+      return rank(a.screenKind) - rank(b.screenKind);
+    });
   }
 
   return CATEGORY_ORDER.filter(k => map.has(k)).map(k => map.get(k)!);
@@ -394,7 +421,15 @@ export default function BookRepairRepairPage() {
                   {selectedCategory.items.map((item, index) => {
                     const displayTitle = cleanTitle(item.title, modelName);
                     return (
-                      <div key={item._id} className={index > 0 ? "border-t border-[#f1f3f4]" : ""}>
+                      <div key={item._id} className={`relative ${index > 0 ? "border-t border-[#f1f3f4]" : ""}`}>
+                        {item.recommended && (
+                          <span className="absolute left-4 top-4 z-10 inline-flex items-center gap-1 rounded-full bg-red-600 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow-[0_2px_8px_rgba(220,38,38,0.3)]">
+                            <svg viewBox="0 0 24 24" fill="currentColor" className="h-2.5 w-2.5">
+                              <path d="M12 .587l3.668 7.568L24 9.75l-6 5.847L19.336 24 12 19.897 4.664 24 6 15.597 0 9.75l8.332-1.595z"/>
+                            </svg>
+                            Recommended
+                          </span>
+                        )}
                         <div className="grid md:grid-cols-[1.1fr_1.3fr]">
 
                           {/* Left: image + price + CTA */}
@@ -404,7 +439,17 @@ export default function BookRepairRepairPage() {
                               alt={displayTitle}
                               className="h-[160px] w-[160px] md:h-[180px] md:w-[180px] object-contain drop-shadow-sm"
                             />
-                            <h2 className="mt-5 max-w-[280px] text-[22px] font-semibold leading-8 text-red-600">
+                            {item.screenKind && (
+                              <span className={`mt-4 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wider ${
+                                item.screenKind === "oled"
+                                  ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
+                                  : "bg-slate-100 text-slate-600 ring-1 ring-slate-200"
+                              }`}>
+                                <span className={`h-1.5 w-1.5 rounded-full ${item.screenKind === "oled" ? "bg-emerald-500" : "bg-slate-400"}`} />
+                                {item.screenKind === "oled" ? "OLED Display" : "LCD Display"}
+                              </span>
+                            )}
+                            <h2 className="mt-3 max-w-[280px] text-[22px] font-semibold leading-8 text-red-600">
                               {displayTitle}
                             </h2>
                             <div className="mt-3 flex items-baseline gap-2">
